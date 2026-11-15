@@ -27,27 +27,48 @@ class ShortcutExecutor(private val clipboard: ClipboardHandler) {
             ShortcutId.PASTE -> clipboard.paste(ic).let { Result(it.success, it.message) }
             ShortcutId.SELECT_ALL -> clipboard.selectAll(ic).let { Result(it.success, it.message) }
 
-            // Key-event based: effect depends on the focused app.
+            // Editor context-menu actions first (public android.R.id IDs the
+            // editor itself implements — most reliable), real Ctrl key events
+            // as fallback for apps that only honor key events.
             ShortcutId.UNDO,
             ShortcutId.REDO,
             ShortcutId.BOLD,
-            ShortcutId.ITALIC,
+            ShortcutId.ITALIC -> {
+                if (ic != null && contextMenuActionId(id)?.let { ic.performContextMenuAction(it) } == true) {
+                    Result(true, "${id.description} performed by the editor")
+                } else {
+                    keyEventResult(ic, id)
+                }
+            }
+
+            // Key-event based: effect depends on the focused app.
             ShortcutId.CENTER,
             ShortcutId.SAVE,
             ShortcutId.PRINT,
             ShortcutId.OPEN,
             ShortcutId.NEW_DOC,
-            ShortcutId.FIND -> {
-                val delivered = KeyEventSender.sendCtrlCombo(ic, id)
-                if (delivered) {
-                    Result(
-                        success = true,
-                        message = "${id.comboLabel} sent — works in apps that support it"
-                    )
-                } else {
-                    Result(false, "No text field focused")
-                }
-            }
+            ShortcutId.FIND -> keyEventResult(ic, id)
+        }
+    }
+
+    /** Public context-menu action ID for this shortcut, if one exists. */
+    private fun contextMenuActionId(id: ShortcutId): Int? = when (id) {
+        ShortcutId.UNDO -> android.R.id.undo
+        ShortcutId.REDO -> android.R.id.redo
+        ShortcutId.BOLD -> android.R.id.bold
+        ShortcutId.ITALIC -> android.R.id.italic
+        else -> null
+    }
+
+    private fun keyEventResult(ic: InputConnection?, id: ShortcutId): Result {
+        val delivered = KeyEventSender.sendCtrlCombo(ic, id)
+        return if (delivered) {
+            Result(
+                success = true,
+                message = "${id.comboLabel} sent — works in apps that support it"
+            )
+        } else {
+            Result(false, "No text field focused")
         }
     }
 

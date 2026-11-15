@@ -8,9 +8,15 @@ import android.view.inputmethod.InputConnection
 /**
  * Direct clipboard/selection operations performed through the InputConnection.
  *
- * Privacy: the clipboard is read ONLY when the user explicitly taps the Paste
- * key, and only the text of the focused editor is touched. The keyboard never
- * reads the clipboard in the background and never transmits anything.
+ * Strategy: the EDITOR performs every action itself via its standard
+ * context-menu actions (android.R.id.copy/cut/paste/selectAll) — the same
+ * reliable mechanism as Select All — with a direct InputConnection fallback
+ * for editors that do not handle those actions.
+ *
+ * Privacy: on the native paste path the editor reads the clipboard itself;
+ * the fallback path reads the clipboard ONLY when the user explicitly taps
+ * the Paste key. The keyboard never reads the clipboard in the background
+ * and never transmits anything.
  */
 class ClipboardHandler(private val context: Context) {
 
@@ -20,32 +26,72 @@ class ClipboardHandler(private val context: Context) {
         as? ClipboardManager
 
     fun copy(ic: InputConnection?): Result {
-        val selected = ic?.getSelectedText(0)?.toString()
-        if (selected.isNullOrEmpty()) {
-            return Result(false, "Select text first, then tap Copy")
+        if (ic == null) return Result(false, "No text field focused")
+        val selected = ic.getSelectedText(0)?.toString()
+        when {
+            // Selection visible to the keyboard: the editor performs its own
+            // Copy (most compatible path); direct clipboard write as fallback.
+            !selected.isNullOrEmpty() -> {
+                return if (ic.performContextMenuAction(android.R.id.copy)) {
+                    Result(true, "Copied selection via the editor")
+                } else {
+                    setClip(selected)
+                    Result(true, "Copied ${selected.length} characters")
+                }
+            }
+            // The editor exposes selection state and nothing is selected.
+            selected != null ->
+                return Result(false, "Select text first (tap Ctrl+A to select all)")
         }
-        setClip(selected)
-        return Result(true, "Copied ${selected.length} characters")
+        // The editor hides its selection from the keyboard: hand Copy to the
+        // editor and report honestly that it decided the outcome.
+        return if (ic.performContextMenuAction(android.R.id.copy)) {
+            Result(true, "Copy performed by the editor")
+        } else {
+            Result(false, "Select text first (tap Ctrl+A to select all)")
+        }
     }
 
     fun cut(ic: InputConnection?): Result {
-        val selected = ic?.getSelectedText(0)?.toString()
-        if (selected.isNullOrEmpty()) {
-            return Result(false, "Select text first, then tap Cut")
+        if (ic == null) return Result(false, "No text field focused")
+        val selected = ic.getSelectedText(0)?.toString()
+        when {
+            !selected.isNullOrEmpty() -> {
+                return if (ic.performContextMenuAction(android.R.id.cut)) {
+                    Result(true, "Cut selection via the editor")
+                } else {
+                    setClip(selected)
+                    ic.commitText("", 1)
+                    Result(true, "Cut ${selected.length} characters")
+                }
+            }
+            selected != null ->
+                return Result(false, "Select text first (tap Ctrl+A to select all)")
         }
-        setClip(selected)
-        ic.commitText("", 1)
-        return Result(true, "Cut ${selected.length} characters")
+        return if (ic.performContextMenuAction(android.R.id.cut)) {
+            Result(true, "Cut performed by the editor")
+        } else {
+            Result(false, "Select text first (tap Ctrl+A to select all)")
+        }
     }
 
     fun paste(ic: InputConnection?): Result {
         if (ic == null) return Result(false, "No text field focused")
+        // Check emptiness first so an empty clipboard is reported honestly —
+        // the editor's menu action would silently no-op. Read happens only
+        // because the user explicitly tapped Paste.
         val text = clipboard?.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()
         if (text.isNullOrEmpty()) {
             return Result(false, "Clipboard is empty or has no text")
         }
-        ic.commitText(text, 1)
-        return Result(true, "Pasted ${text.length} characters")
+        // The editor's own Paste (keeps its formatting/behavior); direct
+        // insertion as fallback.
+        return if (ic.performContextMenuAction(android.R.id.paste)) {
+            Result(true, "Pasted via the editor")
+        } else {
+            ic.commitText(text, 1)
+            Result(true, "Pasted ${text.length} characters")
+        }
     }
 
     /**
