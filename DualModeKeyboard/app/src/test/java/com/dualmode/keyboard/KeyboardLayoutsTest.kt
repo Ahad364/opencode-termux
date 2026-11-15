@@ -153,7 +153,10 @@ class KeyboardLayoutsTest {
 
     @Test
     fun `coding layout has pc style number row with shifted alternates`() {
-        val digits = KeyboardLayouts.coding(Language.ENGLISH).flatten().filter { it.label in "0123456789" }
+        val digitLabels = setOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+        val digits = KeyboardLayouts.coding(Language.ENGLISH)
+            .flatten()
+            .filter { it.label in digitLabels }
         assertEquals(10, digits.size)
         val one = digits.first { it.label == "1" }
         assertEquals(listOf("!"), one.alternates)
