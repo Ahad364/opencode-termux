@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.dualmode.keyboard.R
+import com.dualmode.keyboard.settings.SettingsViewModel
 import com.dualmode.keyboard.ui.ScreenScaffold
 import com.dualmode.keyboard.ui.components.InfoCard
 import com.dualmode.keyboard.ui.components.SectionTitle

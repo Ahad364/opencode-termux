@@ -5,6 +5,7 @@ import android.text.InputType
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import com.dualmode.keyboard.keyboard.KeyboardLayouts
 
 /**
  * Understands the focused editor: which layout to show, whether the field is

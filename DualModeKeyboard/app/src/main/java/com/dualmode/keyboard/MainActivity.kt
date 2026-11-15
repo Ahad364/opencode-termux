@@ -13,9 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val viewModel: SettingsViewModel = viewModel()
-            AppTheme {
-                App(viewModel)
-            }
+            App(viewModel)
         }
     }
 }

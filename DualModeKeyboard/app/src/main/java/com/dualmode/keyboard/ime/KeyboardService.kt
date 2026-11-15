@@ -161,7 +161,7 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
     private fun feedback() {
         if (settings.soundEnabled) {
             val volume = (settings.soundVolume / 100f).coerceIn(0f, 1f)
-            audioManager?.playSoundEffect(AudioManager.FX_KEYPRESS, volume)
+            audioManager?.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, volume)
         }
         if (settings.hapticsEnabled) {
             vibrator?.let { v ->

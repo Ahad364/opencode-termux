@@ -71,7 +71,7 @@ object KeyboardLayouts {
         )
         val row4 = listOf(
             Key(",", KeyAction.TEXT, text = ",", weight = 1.1f, alternates = listOf("!", "?", ";", ":", "-")),
-            Key("␣", KeyAction.SPACE, label = "space", text = " ", weight = 4.4f),
+            Key("space", KeyAction.SPACE, text = " ", weight = 4.4f),
             Key(".", KeyAction.TEXT, text = ".", weight = 1.1f, alternates = listOf(":", "…", "'", "\"")),
             Key(ENTER_ICON, KeyAction.ENTER, isFunction = true, weight = 1.8f)
         )

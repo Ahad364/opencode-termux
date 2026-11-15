@@ -23,7 +23,7 @@ class KeyboardState {
 
     var onChanged: (() -> Unit)? = null
 
-    var isShifted: Boolean get() = shift != ShiftState.OFF
+    val isShifted: Boolean get() = shift != ShiftState.OFF
 
     /** The page currently displayed (SHORTCUTS = the Ctrl shortcut keyboard). */
     fun currentPage(): KeyboardLayouts.Page = page
