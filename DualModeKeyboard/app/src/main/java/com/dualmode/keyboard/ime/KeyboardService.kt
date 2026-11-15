@@ -5,6 +5,7 @@ import android.inputmethodservice.InputMethodService
 import android.media.AudioManager
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.InputConnection
 import com.dualmode.keyboard.shortcuts.KeyEventSender
@@ -93,6 +94,8 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
         profile = EditorHandler.analyze(editorInfo)
         state.disablePopups = profile.type == EditorHandler.FieldType.PASSWORD
         state.ctrlActive = false
+        state.altActive = false
+        state.fnActive = false
         state.shift = KeyboardState.ShiftState.OFF
         state.language = settings.defaultLanguage
         state.page = EditorHandler.initialPage(profile)
@@ -114,6 +117,16 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
                     // handlers (direct clipboard ops or Ctrl key events).
                     runCtrlCombo(ic, key.text)
                     consumeCtrl()
+                } else if (state.altActive) {
+                    // Sticky one-shot Alt: send a real Alt key event (apps
+                    // decide whether to act on it).
+                    runAltCombo(ic, key.text)
+                    consumeAlt()
+                } else if (state.fnActive) {
+                    // Sticky one-shot Fn: digits become F1–F10, anything else
+                    // types normally.
+                    runFnCombo(ic, key.text)
+                    consumeFn()
                 } else {
                     ic?.commitText(key.text, 1)
                     state.consumeShiftAfterText()
@@ -123,14 +136,20 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
                 ic?.commitText(" ", 1)
                 state.consumeShiftAfterText()
                 consumeCtrl()
+                consumeAlt()
+                consumeFn()
             }
             KeyAction.BACKSPACE -> {
                 backspace(ic)
                 consumeCtrl()
+                consumeAlt()
+                consumeFn()
             }
             KeyAction.ENTER -> {
                 EditorHandler.handleEnter(profile, ic)
                 consumeCtrl()
+                consumeAlt()
+                consumeFn()
             }
             KeyAction.SHIFT -> state.toggleShift()
             KeyAction.OPEN_NUMBERS -> state.openPage(KbPage.NUMBERS)
@@ -140,9 +159,26 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
             KeyAction.SWITCH_SYMBOL_PAGE -> state.openPage(KbPage.SYMBOLS)
             KeyAction.LANGUAGE_SWITCH -> state.toggleLanguage()
             KeyAction.CTRL_TOGGLE -> state.toggleCtrl()
-            // Reserved actions kept for API stability; no layout emits them
+            KeyAction.CODE_TOGGLE -> state.openPage(
+                if (state.page == KbPage.CODE) KbPage.LETTERS else KbPage.CODE
+            )
+            KeyAction.ALT_TOGGLE -> state.toggleAlt()
+            KeyAction.FN_TOGGLE -> state.toggleFn()
+            KeyAction.ESC -> {
+                if (!KeyEventSender.sendKeyCode(ic, "KEYCODE_ESCAPE")) {
+                    toast("Editor did not accept ESC")
+                }
+            }
+            KeyAction.ARROW_LEFT -> arrow(ic, "KEYCODE_DPAD_LEFT", "KEYCODE_MOVE_HOME")
+            KeyAction.ARROW_UP -> arrow(ic, "KEYCODE_DPAD_UP", "KEYCODE_PAGE_UP")
+            KeyAction.ARROW_DOWN -> arrow(ic, "KEYCODE_DPAD_DOWN", "KEYCODE_PAGE_DOWN")
+            KeyAction.ARROW_RIGHT -> arrow(ic, "KEYCODE_DPAD_RIGHT", "KEYCODE_MOVE_END")
+            KeyAction.SHORTCUT -> key.shortcut?.let {
+                toast(shortcutExecutor.execute(ic, it).message)
+            }
+            // Reserved action kept for API stability; no layout emits it
             // since the dedicated shortcut keyboard was removed.
-            KeyAction.MODE_SWITCH, KeyAction.SHORTCUT -> {}
+            KeyAction.MODE_SWITCH -> {}
         }
     }
 
@@ -170,12 +206,88 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
 
     private fun ctrlKeyCodeName(ch: Char): String? = when (ch) {
         '\t' -> "KEYCODE_TAB"
+        ' ' -> "KEYCODE_SPACE"
+        ',' -> "KEYCODE_COMMA"
+        '.' -> "KEYCODE_PERIOD"
+        '-' -> "KEYCODE_MINUS"
+        '=' -> "KEYCODE_EQUALS"
+        '[' -> "KEYCODE_LEFT_BRACKET"
+        ']' -> "KEYCODE_RIGHT_BRACKET"
+        '\\' -> "KEYCODE_BACKSLASH"
+        ';' -> "KEYCODE_SEMICOLON"
+        '\'' -> "KEYCODE_APOSTROPHE"
+        '/' -> "KEYCODE_SLASH"
+        '@' -> "KEYCODE_AT"
+        '`' -> "KEYCODE_GRAVE"
         else -> if (ch.isLetter()) "KEYCODE_${ch.uppercaseChar()}" else null
+    }
+
+    /**
+     * Sticky one-shot Alt: sends a real Alt key event for the pressed key.
+     * Delivery is confirmed; the effect depends on the focused app.
+     */
+    private fun runAltCombo(ic: InputConnection?, text: String) {
+        val ch = text.firstOrNull() ?: return
+        val codeName = ctrlKeyCodeName(ch) ?: return
+        if (KeyEventSender.sendKeyCode(
+                ic, codeName, KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON
+            )
+        ) {
+            toast("Alt+$ch sent — depends on the app")
+        }
+    }
+
+    /**
+     * Sticky one-shot Fn: digits become F1–F10 function key events. Any other
+     * key types normally (Fn simply resets with the next press).
+     */
+    private fun runFnCombo(ic: InputConnection?, text: String) {
+        val fKey = fnKeyCodeName(text.firstOrNull())
+        if (fKey != null) {
+            KeyEventSender.sendKeyCode(ic, fKey)
+            return
+        }
+        ic?.commitText(text, 1)
+        state.consumeShiftAfterText()
+    }
+
+    private fun fnKeyCodeName(ch: Char?): String? = when (ch) {
+        '1' -> "KEYCODE_F1"
+        '2' -> "KEYCODE_F2"
+        '3' -> "KEYCODE_F3"
+        '4' -> "KEYCODE_F4"
+        '5' -> "KEYCODE_F5"
+        '6' -> "KEYCODE_F6"
+        '7' -> "KEYCODE_F7"
+        '8' -> "KEYCODE_F8"
+        '9' -> "KEYCODE_F9"
+        '0' -> "KEYCODE_F10"
+        else -> null
+    }
+
+    /**
+     * Arrow keys move the cursor with DPAD key events. While Fn is active they
+     * jump Home/End/PageUp/PageDown instead (laptop-style), and Fn resets.
+     */
+    private fun arrow(ic: InputConnection?, plain: String, withFn: String) {
+        val fnHeld = state.fnActive
+        if (!KeyEventSender.sendKeyCode(ic, if (fnHeld) withFn else plain)) {
+            toast("No editor to navigate")
+        }
+        if (fnHeld) consumeFn()
     }
 
     /** One-shot semantics: Ctrl deactivates after being applied to a key. */
     private fun consumeCtrl() {
         if (state.ctrlActive) state.toggleCtrl()
+    }
+
+    private fun consumeAlt() {
+        if (state.altActive) state.toggleAlt()
+    }
+
+    private fun consumeFn() {
+        if (state.fnActive) state.toggleFn()
     }
 
     private fun backspace(ic: InputConnection?) {

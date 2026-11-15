@@ -17,6 +17,18 @@ enum class KeyAction {
     LANGUAGE_SWITCH,
     MODE_SWITCH,
     CTRL_TOGGLE,
+    /** Toggles between the normal keyboard and the coding keyboard. */
+    CODE_TOGGLE,
+    /** Sticky one-shot Alt modifier (coding keyboard). */
+    ALT_TOGGLE,
+    /** Sticky one-shot Fn modifier (coding keyboard). */
+    FN_TOGGLE,
+    /** Sends an Escape key event (coding keyboard). */
+    ESC,
+    ARROW_LEFT,
+    ARROW_UP,
+    ARROW_DOWN,
+    ARROW_RIGHT,
     SHORTCUT
 }
 

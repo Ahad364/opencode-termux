@@ -30,13 +30,14 @@ class KeyboardLayoutsTest {
     }
 
     @Test
-    fun `pc style toolbar has sticky ctrl and tab on every page`() {
+    fun `pc style toolbar has sticky ctrl tab and code toggle on every page`() {
         val pages = listOf(
             KeyboardLayouts.english(false),
             KeyboardLayouts.numbers(Language.ENGLISH),
             KeyboardLayouts.symbols(),
             KeyboardLayouts.emoji(),
-            KeyboardLayouts.bengali(false)
+            KeyboardLayouts.bengali(false),
+            KeyboardLayouts.coding()
         )
         pages.forEach { rows ->
             val keys = rows.flatten()
@@ -47,6 +48,10 @@ class KeyboardLayoutsTest {
             assertTrue(
                 "every page must expose a Tab key",
                 keys.any { it.label == "Tab" && it.text == "\t" }
+            )
+            assertTrue(
+                "every page must expose the Coding Keys toggle",
+                keys.any { it.action == KeyAction.CODE_TOGGLE }
             )
         }
     }
@@ -118,5 +123,70 @@ class KeyboardLayoutsTest {
         val keys = KeyboardLayouts.english(false).flatten()
         assertTrue(keys.none { it.shortcut != null })
         assertTrue(keys.none { it.subLabel != null })
+    }
+
+    @Test
+    fun `coding layout has modifiers arrows and escape`() {
+        val keys = KeyboardLayouts.coding().flatten()
+        assertTrue(keys.any { it.label == "ESC" && it.action == KeyAction.ESC })
+        assertTrue(keys.any { it.label == "Ctrl" && it.action == KeyAction.CTRL_TOGGLE })
+        assertTrue(keys.any { it.label == "Alt" && it.action == KeyAction.ALT_TOGGLE })
+        assertTrue(keys.any { it.label == "Fn" && it.action == KeyAction.FN_TOGGLE })
+        assertTrue(keys.any { it.action == KeyAction.ARROW_LEFT })
+        assertTrue(keys.any { it.action == KeyAction.ARROW_UP })
+        assertTrue(keys.any { it.action == KeyAction.ARROW_DOWN })
+        assertTrue(keys.any { it.action == KeyAction.ARROW_RIGHT })
+    }
+
+    @Test
+    fun `coding layout has all programming symbols`() {
+        val labels = KeyboardLayouts.coding().flatten().map { it.label }
+        // Keys shown directly or via long-press alternates on the number row.
+        val alternates = KeyboardLayouts.coding().flatten().flatMap { it.alternates }
+        val available = labels + alternates
+        "{ } [ ] ( ) < > ; : ' \" = + - * / _ \\ | & ! ? # @ $ % ^ ~"
+            .split(" ")
+            .forEach { s ->
+                assertTrue("coding layout missing symbol $s", available.contains(s))
+            }
+    }
+
+    @Test
+    fun `coding layout has pc style number row with shifted alternates`() {
+        val digits = KeyboardLayouts.coding().flatten().filter { it.label in "0123456789" }
+        assertEquals(10, digits.size)
+        val one = digits.first { it.label == "1" }
+        assertEquals(listOf("!"), one.alternates)
+        val two = digits.first { it.label == "2" }
+        assertEquals(listOf("@"), two.alternates)
+    }
+
+    @Test
+    fun `coding layout exposes direct editing shortcuts`() {
+        val keys = KeyboardLayouts.coding().flatten()
+        val ids = keys.mapNotNull { it.shortcut }
+        listOf(
+            com.dualmode.keyboard.shortcuts.ShortcutId.CUT,
+            com.dualmode.keyboard.shortcuts.ShortcutId.COPY,
+            com.dualmode.keyboard.shortcuts.ShortcutId.PASTE,
+            com.dualmode.keyboard.shortcuts.ShortcutId.SELECT_ALL,
+            com.dualmode.keyboard.shortcuts.ShortcutId.UNDO,
+            com.dualmode.keyboard.shortcuts.ShortcutId.REDO
+        ).forEach { id ->
+            assertTrue("coding layout missing shortcut $id", ids.contains(id))
+        }
+        // No legacy mode-switch keys anywhere.
+        assertTrue(keys.none { it.action == KeyAction.MODE_SWITCH })
+        // Every shortcut key shows its combo as sub label.
+        val copy = keys.first { it.shortcut == com.dualmode.keyboard.shortcuts.ShortcutId.COPY }
+        assertEquals("Ctrl+C", copy.subLabel)
+    }
+
+    @Test
+    fun `coding layout keeps space backspace and enter`() {
+        val keys = KeyboardLayouts.coding().flatten()
+        assertTrue(keys.any { it.action == KeyAction.SPACE })
+        assertTrue(keys.any { it.action == KeyAction.BACKSPACE })
+        assertTrue(keys.any { it.action == KeyAction.ENTER })
     }
 }

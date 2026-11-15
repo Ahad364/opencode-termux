@@ -15,6 +15,10 @@ class KeyboardState {
     var language: Language = Language.ENGLISH
     var shift: ShiftState = ShiftState.OFF
     var ctrlActive: Boolean = false
+    /** Sticky one-shot Alt modifier (coding keyboard). */
+    var altActive: Boolean = false
+    /** Sticky one-shot Fn modifier (coding keyboard). */
+    var fnActive: Boolean = false
 
     /** Password/sensitive editors get no long-press popups and no clipboard extras. */
     var disablePopups: Boolean = false
@@ -61,10 +65,22 @@ class KeyboardState {
         onChanged?.invoke()
     }
 
+    fun toggleAlt() {
+        altActive = !altActive
+        onChanged?.invoke()
+    }
+
+    fun toggleFn() {
+        fnActive = !fnActive
+        onChanged?.invoke()
+    }
+
     fun reset() {
         page = KeyboardLayouts.Page.LETTERS
         shift = ShiftState.OFF
         ctrlActive = false
+        altActive = false
+        fnActive = false
         onChanged?.invoke()
     }
 }

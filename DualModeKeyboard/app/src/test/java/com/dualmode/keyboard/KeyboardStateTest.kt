@@ -54,6 +54,36 @@ class KeyboardStateTest {
     }
 
     @Test
+    fun `alt and fn toggles flip state and reset clears them`() {
+        val state = KeyboardState()
+        assertFalse(state.altActive)
+        assertFalse(state.fnActive)
+        state.toggleAlt()
+        state.toggleFn()
+        assertTrue(state.altActive)
+        assertTrue(state.fnActive)
+        state.toggleAlt()
+        state.toggleFn()
+        assertFalse(state.altActive)
+        assertFalse(state.fnActive)
+
+        state.toggleAlt()
+        state.toggleFn()
+        state.reset()
+        assertFalse(state.altActive)
+        assertFalse(state.fnActive)
+    }
+
+    @Test
+    fun `code page toggle round trips`() {
+        val state = KeyboardState()
+        state.openPage(KeyboardLayouts.Page.CODE)
+        assertEquals(KeyboardLayouts.Page.CODE, state.page)
+        state.openPage(KeyboardLayouts.Page.LETTERS)
+        assertEquals(KeyboardLayouts.Page.LETTERS, state.page)
+    }
+
+    @Test
     fun `page changes reset shift`() {
         val state = KeyboardState()
         state.toggleShift()

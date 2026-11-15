@@ -1,15 +1,17 @@
 package com.dualmode.keyboard.keyboard
 
 import com.dualmode.keyboard.data.Language
+import com.dualmode.keyboard.shortcuts.ShortcutId
 
 /**
  * All keyboard layouts, built as pure data so they are easy to test and cheap
- * to (re)create. Pages: letters (EN/BN), numbers, symbols and emoji.
+ * to (re)create. Pages: letters (EN/BN), numbers, symbols, emoji and the
+ * dedicated coding keyboard.
  *
  * PC-style compact design: a sticky one-shot Ctrl modifier and a Tab key live
  * directly in the toolbar of every page, so Ctrl+letter shortcuts (Copy,
- * Paste, Undo, Save…) work from the normal typing keyboard — there is no
- * separate shortcut keyboard.
+ * Paste, Undo, Save…) work from the normal typing keyboard. The toolbar also
+ * carries the "</>" Coding Keys toggle for the dedicated coding keyboard.
  */
 object KeyboardLayouts {
 
@@ -31,22 +33,87 @@ object KeyboardLayouts {
         Page.NUMBERS -> numbers(language)
         Page.SYMBOLS -> symbols()
         Page.EMOJI -> emoji()
+        Page.CODE -> coding()
     }
 
     // ---------------------------------------------------------------- toolbar
 
     private fun toolbar(language: Language): List<Key> = listOf(
-        Key("Ctrl", KeyAction.CTRL_TOGGLE, isFunction = true, weight = 1.3f),
-        Key("Tab", KeyAction.TEXT, text = "\t", isFunction = true, weight = 1.1f),
-        Key("😀", KeyAction.OPEN_EMOJI, isFunction = true, weight = 0.9f),
+        Key("Ctrl", KeyAction.CTRL_TOGGLE, isFunction = true, weight = 1.2f),
+        Key("</>", KeyAction.CODE_TOGGLE, isFunction = true, weight = 1f),
+        Key("Tab", KeyAction.TEXT, text = "\t", isFunction = true, weight = 1f),
+        Key("😀", KeyAction.OPEN_EMOJI, isFunction = true, weight = 0.8f),
         Key(
             if (language == Language.ENGLISH) "EN" else "বাং",
             KeyAction.LANGUAGE_SWITCH,
             isFunction = true,
-            weight = 0.9f
+            weight = 0.8f
         ),
-        Key("123", KeyAction.OPEN_NUMBERS, isFunction = true, weight = 0.9f)
+        Key("123", KeyAction.OPEN_NUMBERS, isFunction = true, weight = 0.8f)
     )
+
+    // ------------------------------------------------------------ coding keys
+
+    private fun sym(c: Char): Key = Key(label = c.toString(), weight = 0.85f)
+
+    /** PC-style number row: long-press shows the shifted symbol (1 → !…). */
+    private fun digit(d: Char, shifted: Char): Key = Key(
+        label = d.toString(),
+        alternates = listOf(shifted.toString())
+    )
+
+    private fun shortcutKey(id: ShortcutId, label: String, weight: Float = 1f): Key = Key(
+        label = label,
+        action = KeyAction.SHORTCUT,
+        shortcut = id,
+        subLabel = id.comboLabel,
+        weight = weight
+    )
+
+    /**
+     * The dedicated coding keyboard: modifier keys (ESC/Ctrl/Alt/Fn), cursor
+     * arrows (Fn+arrow jumps Home/End/PageUp/PageDown), all common programming
+     * symbols, a PC-style number row and direct clipboard/editing shortcuts.
+     */
+    fun coding(): List<List<Key>> {
+        val row1 = listOf(
+            Key("ESC", KeyAction.ESC, isFunction = true, weight = 1.2f),
+            Key("Ctrl", KeyAction.CTRL_TOGGLE, isFunction = true, weight = 1.2f),
+            Key("Alt", KeyAction.ALT_TOGGLE, isFunction = true, weight = 1.1f),
+            Key("Fn", KeyAction.FN_TOGGLE, isFunction = true, weight = 1.1f),
+            Key("←", KeyAction.ARROW_LEFT, isFunction = true, weight = 1f),
+            Key("↑", KeyAction.ARROW_UP, isFunction = true, weight = 1f),
+            Key("↓", KeyAction.ARROW_DOWN, isFunction = true, weight = 1f),
+            Key("→", KeyAction.ARROW_RIGHT, isFunction = true, weight = 1f)
+        )
+        val row2 = listOf(
+            Key("Tab", KeyAction.TEXT, text = "\t", isFunction = true, weight = 1.4f),
+            sym('{'), sym('}'), sym('['), sym(']'), sym('('), sym(')'),
+            sym('<'), sym('>'),
+            Key(BACKSPACE_ICON, KeyAction.BACKSPACE, isFunction = true, weight = 1.4f)
+        )
+        val row3 = listOf(
+            sym('\\'), sym('|'), sym(';'), sym(':'), sym('\''), sym('"'),
+            sym('='), sym('+'), sym('/'),
+            Key(ENTER_ICON, KeyAction.ENTER, isFunction = true, weight = 1.3f)
+        )
+        val row4 = listOf(
+            digit('1', '!'), digit('2', '@'), digit('3', '#'), digit('4', '$'),
+            digit('5', '%'), digit('6', '^'), digit('7', '&'), digit('8', '*'),
+            digit('9', '('), digit('0', ')')
+        )
+        val row5 = listOf(
+            sym('~'), sym('_'), sym('-'), sym('?'),
+            Key("space", KeyAction.SPACE, text = " ", weight = 1.5f),
+            shortcutKey(ShortcutId.CUT, "Cut", 0.9f),
+            shortcutKey(ShortcutId.COPY, "Copy", 0.9f),
+            shortcutKey(ShortcutId.PASTE, "Paste", 1f),
+            shortcutKey(ShortcutId.SELECT_ALL, "All", 0.9f),
+            shortcutKey(ShortcutId.UNDO, "Undo", 0.9f),
+            shortcutKey(ShortcutId.REDO, "Redo", 0.9f)
+        )
+        return listOf(row1, row2, row3, row4, row5)
+    }
 
     // --------------------------------------------------------------- english
 
@@ -198,5 +265,5 @@ object KeyboardLayouts {
     }
 
     /** Pages the keyboard can be in. */
-    enum class Page { LETTERS, NUMBERS, SYMBOLS, EMOJI }
+    enum class Page { LETTERS, NUMBERS, SYMBOLS, EMOJI, CODE }
 }

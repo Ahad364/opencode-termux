@@ -62,6 +62,8 @@ class KeyboardView @JvmOverloads constructor(
         }
 
     var ctrlActive: Boolean = false
+    var altActive: Boolean = false
+    var fnActive: Boolean = false
         set(value) {
             field = value
             invalidate()
@@ -210,8 +212,15 @@ class KeyboardView @JvmOverloads constructor(
 
     private fun drawKey(canvas: Canvas, key: Key, rect: RectF) {
         val isPressed = key === pressedKey && popup == null
-        val isCtrlToggle = key.action == KeyAction.CTRL_TOGGLE
-        val ctrlOn = isCtrlToggle && ctrlActive
+        val isToggle = key.action == KeyAction.CTRL_TOGGLE ||
+            key.action == KeyAction.ALT_TOGGLE ||
+            key.action == KeyAction.FN_TOGGLE
+        val toggleOn = when (key.action) {
+            KeyAction.CTRL_TOGGLE -> ctrlActive
+            KeyAction.ALT_TOGGLE -> altActive
+            KeyAction.FN_TOGGLE -> fnActive
+            else -> false
+        }
         val isShortcut = key.action == KeyAction.SHORTCUT
 
         val drawRect = RectF(rect)
@@ -229,13 +238,13 @@ class KeyboardView @JvmOverloads constructor(
         }
 
         when {
-            ctrlOn -> {
+            toggleOn -> {
                 keyPaint.shader = null
                 keyPaint.color = theme.accent
             }
             isPressed -> {
                 keyPaint.shader = null
-                keyPaint.color = if (isCtrlToggle) theme.accent else theme.keyBackgroundPressed
+                keyPaint.color = if (isToggle) theme.accent else theme.keyBackgroundPressed
             }
             key.isFunction -> {
                 keyPaint.shader = null
@@ -256,8 +265,8 @@ class KeyboardView @JvmOverloads constructor(
 
         // Text.
         val textColor = when {
-            ctrlOn -> theme.accentText
-            isPressed && isCtrlToggle -> theme.accentText
+            toggleOn -> theme.accentText
+            isPressed && isToggle -> theme.accentText
             key.isFunction -> theme.functionKeyText
             else -> theme.keyText
         }

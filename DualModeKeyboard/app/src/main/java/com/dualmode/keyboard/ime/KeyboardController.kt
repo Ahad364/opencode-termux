@@ -69,6 +69,8 @@ class KeyboardController(
         view.applySettings(settings)
         view.popupsEnabled = !state.disablePopups
         view.ctrlActive = state.ctrlActive
+        view.altActive = state.altActive
+        view.fnActive = state.fnActive
         view.listener = viewListener
         view.rows = KeyboardLayouts.forState(
             page = state.currentPage(),
