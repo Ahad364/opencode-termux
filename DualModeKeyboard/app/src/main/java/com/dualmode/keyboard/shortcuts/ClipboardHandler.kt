@@ -3,7 +3,6 @@ package com.dualmode.keyboard.shortcuts
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
 
 /**
@@ -49,25 +48,34 @@ class ClipboardHandler(private val context: Context) {
         return Result(true, "Pasted ${text.length} characters")
     }
 
+    /**
+     * Select all: the EDITOR performs the selection itself — the keyboard
+     * never extracts the document into its own memory, so there is no
+     * character or line limit, no matter how long the text, code or document
+     * is. Two mechanisms are tried, in order:
+     *
+     * 1. The standard "Select all" context-menu action, honored by
+     *    EditText-based editors. Its boolean result is a direct signal of
+     *    whether the editor handled it (no false success reports).
+     * 2. A real Ctrl+A key event with the CTRL meta state, honored by most
+     *    other editors. Delivery is confirmed; the actual effect depends on
+     *    the focused app and is reported honestly as such.
+     *
+     * The sticky Ctrl state is reset by the IME service after execution.
+     */
     fun selectAll(ic: InputConnection?): Result {
         if (ic == null) return Result(false, "No text field focused")
-        val extracted = ic.getExtractedText(ExtractedTextRequest(), 0)
-        val full = extracted?.text?.toString()
-            ?: (ic.getTextBeforeCursor(MAX_TEXT, 0)?.toString()
-                + ic.getSelectedText(0)?.toString()
-                + ic.getTextAfterCursor(MAX_TEXT, 0)?.toString())
-        if (full.isNullOrEmpty()) {
-            return Result(false, "No text to select")
+        if (ic.performContextMenuAction(android.R.id.selectAll)) {
+            return Result(true, "Selected all editor content")
         }
-        ic.setSelection(0, full.length)
-        return Result(true, "Selected all ${full.length} characters")
+        return if (KeyEventSender.sendCtrlKeyCode(ic, "KEYCODE_A")) {
+            Result(true, "Ctrl+A sent — editor selects all supported content")
+        } else {
+            Result(false, "Editor did not accept the select-all command")
+        }
     }
 
     private fun setClip(text: String) {
         clipboard?.setPrimaryClip(ClipData.newPlainText("text", text))
-    }
-
-    companion object {
-        private const val MAX_TEXT = 10_000
     }
 }
