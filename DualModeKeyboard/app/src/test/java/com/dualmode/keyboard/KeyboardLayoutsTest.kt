@@ -37,7 +37,7 @@ class KeyboardLayoutsTest {
             KeyboardLayouts.symbols(),
             KeyboardLayouts.emoji(),
             KeyboardLayouts.bengali(false),
-            KeyboardLayouts.coding()
+            KeyboardLayouts.coding(Language.ENGLISH)
         )
         pages.forEach { rows ->
             val keys = rows.flatten()
@@ -127,7 +127,7 @@ class KeyboardLayoutsTest {
 
     @Test
     fun `coding layout has modifiers arrows and escape`() {
-        val keys = KeyboardLayouts.coding().flatten()
+        val keys = KeyboardLayouts.coding(Language.ENGLISH).flatten()
         assertTrue(keys.any { it.label == "ESC" && it.action == KeyAction.ESC })
         assertTrue(keys.any { it.label == "Ctrl" && it.action == KeyAction.CTRL_TOGGLE })
         assertTrue(keys.any { it.label == "Alt" && it.action == KeyAction.ALT_TOGGLE })
@@ -140,9 +140,9 @@ class KeyboardLayoutsTest {
 
     @Test
     fun `coding layout has all programming symbols`() {
-        val labels = KeyboardLayouts.coding().flatten().map { it.label }
+        val labels = KeyboardLayouts.coding(Language.ENGLISH).flatten().map { it.label }
         // Keys shown directly or via long-press alternates on the number row.
-        val alternates = KeyboardLayouts.coding().flatten().flatMap { it.alternates }
+        val alternates = KeyboardLayouts.coding(Language.ENGLISH).flatten().flatMap { it.alternates }
         val available = labels + alternates
         "{ } [ ] ( ) < > ; : ' \" = + - * / _ \\ | & ! ? # @ $ % ^ ~"
             .split(" ")
@@ -153,7 +153,7 @@ class KeyboardLayoutsTest {
 
     @Test
     fun `coding layout has pc style number row with shifted alternates`() {
-        val digits = KeyboardLayouts.coding().flatten().filter { it.label in "0123456789" }
+        val digits = KeyboardLayouts.coding(Language.ENGLISH).flatten().filter { it.label in "0123456789" }
         assertEquals(10, digits.size)
         val one = digits.first { it.label == "1" }
         assertEquals(listOf("!"), one.alternates)
@@ -163,7 +163,7 @@ class KeyboardLayoutsTest {
 
     @Test
     fun `coding layout exposes direct editing shortcuts`() {
-        val keys = KeyboardLayouts.coding().flatten()
+        val keys = KeyboardLayouts.coding(Language.ENGLISH).flatten()
         val ids = keys.mapNotNull { it.shortcut }
         listOf(
             com.dualmode.keyboard.shortcuts.ShortcutId.CUT,
@@ -184,7 +184,7 @@ class KeyboardLayoutsTest {
 
     @Test
     fun `coding layout keeps space backspace and enter`() {
-        val keys = KeyboardLayouts.coding().flatten()
+        val keys = KeyboardLayouts.coding(Language.ENGLISH).flatten()
         assertTrue(keys.any { it.action == KeyAction.SPACE })
         assertTrue(keys.any { it.action == KeyAction.BACKSPACE })
         assertTrue(keys.any { it.action == KeyAction.ENTER })

@@ -33,7 +33,7 @@ object KeyboardLayouts {
         Page.NUMBERS -> numbers(language)
         Page.SYMBOLS -> symbols()
         Page.EMOJI -> emoji()
-        Page.CODE -> coding()
+        Page.CODE -> coding(language)
     }
 
     // ---------------------------------------------------------------- toolbar
@@ -75,7 +75,8 @@ object KeyboardLayouts {
      * arrows (Fn+arrow jumps Home/End/PageUp/PageDown), all common programming
      * symbols, a PC-style number row and direct clipboard/editing shortcuts.
      */
-    fun coding(): List<List<Key>> {
+    fun coding(language: Language): List<List<Key>> {
+        val row0 = toolbar(language)
         val row1 = listOf(
             Key("ESC", KeyAction.ESC, isFunction = true, weight = 1.2f),
             Key("Ctrl", KeyAction.CTRL_TOGGLE, isFunction = true, weight = 1.2f),
@@ -112,7 +113,7 @@ object KeyboardLayouts {
             shortcutKey(ShortcutId.UNDO, "Undo", 0.9f),
             shortcutKey(ShortcutId.REDO, "Redo", 0.9f)
         )
-        return listOf(row1, row2, row3, row4, row5)
+        return listOf(row0, row1, row2, row3, row4, row5)
     }
 
     // --------------------------------------------------------------- english
