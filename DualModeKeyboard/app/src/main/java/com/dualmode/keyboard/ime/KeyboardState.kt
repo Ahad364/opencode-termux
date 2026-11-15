@@ -45,7 +45,7 @@ class KeyboardState {
         onChanged?.invoke()
     }
 
-    fun setPage(p: KeyboardLayouts.Page) {
+    fun openPage(p: KeyboardLayouts.Page) {
         page = p
         shift = ShiftState.OFF
         onChanged?.invoke()

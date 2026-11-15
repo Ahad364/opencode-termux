@@ -121,14 +121,14 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
             KeyAction.BACKSPACE -> backspace(ic)
             KeyAction.ENTER -> EditorHandler.handleEnter(profile, ic)
             KeyAction.SHIFT -> state.toggleShift()
-            KeyAction.OPEN_NUMBERS -> state.setPage(KbPage.NUMBERS)
-            KeyAction.OPEN_SYMBOLS -> state.setPage(KbPage.SYMBOLS)
-            KeyAction.OPEN_EMOJI -> state.setPage(KbPage.EMOJI)
-            KeyAction.BACK_TO_LETTERS -> state.setPage(
+            KeyAction.OPEN_NUMBERS -> state.openPage(KbPage.NUMBERS)
+            KeyAction.OPEN_SYMBOLS -> state.openPage(KbPage.SYMBOLS)
+            KeyAction.OPEN_EMOJI -> state.openPage(KbPage.EMOJI)
+            KeyAction.BACK_TO_LETTERS -> state.openPage(
                 if (state.mode == KeyboardMode.SHORTCUT) KbPage.SHORTCUTS
                 else KbPage.LETTERS
             )
-            KeyAction.SWITCH_SYMBOL_PAGE -> state.setPage(KbPage.SYMBOLS)
+            KeyAction.SWITCH_SYMBOL_PAGE -> state.openPage(KbPage.SYMBOLS)
             KeyAction.LANGUAGE_SWITCH -> state.toggleLanguage()
             KeyAction.MODE_SWITCH -> controller?.switchMode()
             KeyAction.CTRL_TOGGLE -> state.toggleCtrl()
