@@ -37,7 +37,7 @@ class KeyboardStateTest {
     @Test
     fun `language toggle switches and returns to letters`() {
         val state = KeyboardState()
-        state.setPage(KeyboardLayouts.Page.NUMBERS)
+        state.openPage(KeyboardLayouts.Page.NUMBERS)
         state.toggleLanguage()
         assertEquals(KeyboardLayouts.Page.LETTERS, state.page)
         assertFalse(state.isShifted)
@@ -57,7 +57,7 @@ class KeyboardStateTest {
     fun `page changes reset shift`() {
         val state = KeyboardState()
         state.toggleShift()
-        state.setPage(KeyboardLayouts.Page.SYMBOLS)
+        state.openPage(KeyboardLayouts.Page.SYMBOLS)
         assertFalse(state.isShifted)
         assertEquals(KeyboardLayouts.Page.SYMBOLS, state.page)
     }
