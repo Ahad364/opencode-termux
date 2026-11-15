@@ -4,7 +4,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
-import com.dualmode.keyboard.data.KeyboardMode
 import com.dualmode.keyboard.data.KeyboardSettings
 import com.dualmode.keyboard.data.SettingsDefaults
 import com.dualmode.keyboard.keyboard.KeyboardLayouts
@@ -12,15 +11,13 @@ import com.dualmode.keyboard.keyboard.KeyboardView
 import com.dualmode.keyboard.utils.dp
 
 /**
- * Owns the keyboard view hierarchy inside the IME window and handles mode
- * switching (Normal ↔ Ctrl shortcut) with a smooth slide transition that
- * keeps the editor focus untouched.
+ * Owns the keyboard view hierarchy inside the IME window and re-renders it on
+ * state changes (including the sticky Ctrl active-state feedback).
  */
 class KeyboardController(
     private val context: android.content.Context,
     val state: KeyboardState,
-    private val viewListener: KeyboardView.Listener,
-    private val onModePersisted: (KeyboardMode) -> Unit
+    private val viewListener: KeyboardView.Listener
 ) {
 
     var settings: KeyboardSettings = SettingsDefaults.SETTINGS
@@ -32,15 +29,15 @@ class KeyboardController(
     private var container: FrameLayout? = null
     private var currentView: KeyboardView? = null
 
-    /** Builds and returns the root container with the initial mode shown. */
+    /** Builds and returns the root container with the keyboard shown. */
     fun buildRoot(): View {
         val frame = FrameLayout(context)
         container = frame
-        show(state.mode, animate = false)
+        show(animate = false)
         return frame
     }
 
-    fun show(mode: KeyboardMode, animate: Boolean) {
+    fun show(animate: Boolean) {
         val frame = container ?: return
         frame.removeAllViews()
         val view = KeyboardView(context)
@@ -66,21 +63,6 @@ class KeyboardController(
     /** Re-renders the current view from state (called on every state change). */
     fun refresh() {
         currentView?.let { configure(it) }
-    }
-
-    fun switchMode() {
-        val next = if (state.mode == KeyboardMode.NORMAL) KeyboardMode.SHORTCUT
-        else KeyboardMode.NORMAL
-        state.mode = next
-        state.ctrlActive = false
-        state.page = if (next == KeyboardMode.SHORTCUT) {
-            KeyboardLayouts.Page.SHORTCUTS
-        } else {
-            KeyboardLayouts.Page.LETTERS
-        }
-        state.shift = KeyboardState.ShiftState.OFF
-        onModePersisted(next)
-        show(next, animate = settings.animationsEnabled)
     }
 
     private fun configure(view: KeyboardView) {

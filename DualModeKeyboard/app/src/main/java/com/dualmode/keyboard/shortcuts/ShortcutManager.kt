@@ -30,6 +30,13 @@ enum class ShortcutId(val comboLabel: String, val description: String, val keyCo
     FIND("Ctrl+F", "Find", "KEYCODE_F");
 
     companion object {
+        private val byChar: Map<Char, ShortcutId> = entries
+            .filter { it.keyCodeName != null && it.keyCodeName!!.startsWith("KEYCODE_") }
+            .associateBy { it.keyCodeName!!.last() }
+
+        /** Maps a single typed character (e.g. 'c') to its shortcut, if any. */
+        fun fromChar(c: Char): ShortcutId? = byChar[c.uppercaseChar()]
+
         fun fromKeyCodeName(name: String?): ShortcutId? =
             entries.firstOrNull { it.keyCodeName == name }
     }

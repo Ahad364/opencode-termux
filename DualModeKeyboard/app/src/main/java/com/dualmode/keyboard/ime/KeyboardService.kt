@@ -7,9 +7,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.View
 import android.view.inputmethod.InputConnection
+import com.dualmode.keyboard.shortcuts.KeyEventSender
 import android.widget.Toast
 import com.dualmode.keyboard.KeyboardApplication
-import com.dualmode.keyboard.data.KeyboardMode
 import com.dualmode.keyboard.data.KeyboardSettings
 import com.dualmode.keyboard.data.SettingsDefaults
 import com.dualmode.keyboard.keyboard.Key
@@ -18,6 +18,7 @@ import com.dualmode.keyboard.keyboard.KeyboardLayouts.Page as KbPage
 import com.dualmode.keyboard.keyboard.KeyboardView
 import com.dualmode.keyboard.shortcuts.ClipboardHandler
 import com.dualmode.keyboard.shortcuts.ShortcutExecutor
+import com.dualmode.keyboard.shortcuts.ShortcutId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -75,16 +76,12 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
     }
 
     override fun onCreateInputView(): View {
-        state.mode = settings.lastMode
         state.language = settings.defaultLanguage
         state.onChanged = { controller?.refresh() }
         val controller = KeyboardController(
             context = this,
             state = state,
-            viewListener = this,
-            onModePersisted = { mode ->
-                scope.launch { app.settingsRepository.setLastMode(mode) }
-            }
+            viewListener = this
         )
         controller.settings = settings
         this.controller = controller
@@ -111,29 +108,74 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
         val ic: InputConnection? = currentInputConnection
         when (key.action) {
             KeyAction.TEXT -> {
-                ic?.commitText(key.text, 1)
-                state.consumeShiftAfterText()
+                if (state.ctrlActive) {
+                    // Sticky one-shot Ctrl: apply the modifier to this key,
+                    // then reset. Known letters go through the shortcut
+                    // handlers (direct clipboard ops or Ctrl key events).
+                    runCtrlCombo(ic, key.text)
+                    consumeCtrl()
+                } else {
+                    ic?.commitText(key.text, 1)
+                    state.consumeShiftAfterText()
+                }
             }
             KeyAction.SPACE -> {
                 ic?.commitText(" ", 1)
                 state.consumeShiftAfterText()
+                consumeCtrl()
             }
-            KeyAction.BACKSPACE -> backspace(ic)
-            KeyAction.ENTER -> EditorHandler.handleEnter(profile, ic)
+            KeyAction.BACKSPACE -> {
+                backspace(ic)
+                consumeCtrl()
+            }
+            KeyAction.ENTER -> {
+                EditorHandler.handleEnter(profile, ic)
+                consumeCtrl()
+            }
             KeyAction.SHIFT -> state.toggleShift()
             KeyAction.OPEN_NUMBERS -> state.openPage(KbPage.NUMBERS)
             KeyAction.OPEN_SYMBOLS -> state.openPage(KbPage.SYMBOLS)
             KeyAction.OPEN_EMOJI -> state.openPage(KbPage.EMOJI)
-            KeyAction.BACK_TO_LETTERS -> state.openPage(
-                if (state.mode == KeyboardMode.SHORTCUT) KbPage.SHORTCUTS
-                else KbPage.LETTERS
-            )
+            KeyAction.BACK_TO_LETTERS -> state.openPage(KbPage.LETTERS)
             KeyAction.SWITCH_SYMBOL_PAGE -> state.openPage(KbPage.SYMBOLS)
             KeyAction.LANGUAGE_SWITCH -> state.toggleLanguage()
-            KeyAction.MODE_SWITCH -> controller?.switchMode()
             KeyAction.CTRL_TOGGLE -> state.toggleCtrl()
-            KeyAction.SHORTCUT -> key.shortcut?.let { runShortcut(ic, it) }
+            // Reserved actions kept for API stability; no layout emits them
+            // since the dedicated shortcut keyboard was removed.
+            KeyAction.MODE_SWITCH, KeyAction.SHORTCUT -> {}
         }
+    }
+
+    /**
+     * Applies Ctrl to a single key press. Letters with a known shortcut
+     * (Ctrl+C, Ctrl+V, Ctrl+Z…) run through [ShortcutExecutor], which performs
+     * direct InputConnection work for clipboard actions and sends real Ctrl
+     * key events for everything else. Unknown letters get a generic Ctrl
+     * key event (e.g. Ctrl+D) — apps decide whether to act on it.
+     */
+    private fun runCtrlCombo(ic: InputConnection?, text: String) {
+        val ch = text.firstOrNull() ?: return
+        val shortcut = ShortcutId.fromChar(ch)
+        if (shortcut != null) {
+            toast(shortcutExecutor.execute(ic, shortcut).message)
+            return
+        }
+        val codeName = ctrlKeyCodeName(ch)
+        if (codeName != null && KeyEventSender.sendCtrlKeyCode(ic, codeName)) {
+            val display = if (ch == '\t') "Tab" else ch.uppercase()
+            toast("Ctrl+$display sent — depends on the app")
+        }
+        // If no meaningful Ctrl combination exists, Ctrl simply resets.
+    }
+
+    private fun ctrlKeyCodeName(ch: Char): String? = when (ch) {
+        '\t' -> "KEYCODE_TAB"
+        else -> if (ch.isLetter()) "KEYCODE_${ch.uppercaseChar()}" else null
+    }
+
+    /** One-shot semantics: Ctrl deactivates after being applied to a key. */
+    private fun consumeCtrl() {
+        if (state.ctrlActive) state.toggleCtrl()
     }
 
     private fun backspace(ic: InputConnection?) {
@@ -145,11 +187,6 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
             ic.deleteSurroundingText(1, 0)
         }
         state.consumeShiftAfterText()
-    }
-
-    private fun runShortcut(ic: InputConnection?, id: com.dualmode.keyboard.shortcuts.ShortcutId) {
-        val result = shortcutExecutor.execute(ic, id)
-        toast(result.message)
     }
 
     private fun toast(message: String) {

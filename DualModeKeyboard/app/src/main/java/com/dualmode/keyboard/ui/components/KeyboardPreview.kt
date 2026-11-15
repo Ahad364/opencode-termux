@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.dualmode.keyboard.data.KeyboardMode
 import com.dualmode.keyboard.data.KeyboardSettings
 import com.dualmode.keyboard.data.Language
 import com.dualmode.keyboard.keyboard.KeyboardLayouts
@@ -26,7 +25,6 @@ import com.dualmode.keyboard.keyboard.KeyboardView
 @Composable
 fun KeyboardPreview(
     settings: KeyboardSettings,
-    mode: KeyboardMode = KeyboardMode.NORMAL,
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf("") }
@@ -62,12 +60,8 @@ fun KeyboardPreview(
             },
             update = { view ->
                 view.applySettings(settings)
-                val page = when (mode) {
-                    KeyboardMode.SHORTCUT -> KeyboardLayouts.Page.SHORTCUTS
-                    else -> KeyboardLayouts.Page.LETTERS
-                }
                 view.rows = KeyboardLayouts.forState(
-                    page = page,
+                    page = KeyboardLayouts.Page.LETTERS,
                     language = if (settings.defaultLanguage == Language.BENGALI)
                         Language.BENGALI else Language.ENGLISH,
                     shifted = false,

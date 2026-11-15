@@ -22,9 +22,17 @@ object KeyEventSender {
      *         Note: delivery does NOT guarantee the app acted on them.
      */
     fun sendCtrlCombo(ic: InputConnection?, id: ShortcutId): Boolean {
-        if (ic == null) return false
         val codeName = id.keyCodeName ?: return false
-        val keyCode = KeyEvent.keyCodeFromString(codeName)
+        return sendCtrlKeyCode(ic, codeName)
+    }
+
+    /**
+     * Sends Ctrl + the key named by [keyCodeName] (e.g. "KEYCODE_TAB") through
+     * the current InputConnection. Used for shortcuts and generic Ctrl combos.
+     */
+    fun sendCtrlKeyCode(ic: InputConnection?, keyCodeName: String): Boolean {
+        if (ic == null) return false
+        val keyCode = KeyEvent.keyCodeFromString(keyCodeName)
         if (keyCode == KeyEvent.KEYCODE_UNKNOWN) return false
 
         val downTime = SystemClock.uptimeMillis()

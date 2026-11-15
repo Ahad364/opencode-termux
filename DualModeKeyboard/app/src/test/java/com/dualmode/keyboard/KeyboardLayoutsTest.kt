@@ -27,7 +27,41 @@ class KeyboardLayoutsTest {
         assertTrue(allKeys.any { it.action == KeyAction.SPACE })
         assertTrue(allKeys.any { it.action == KeyAction.BACKSPACE })
         assertTrue(allKeys.any { it.action == KeyAction.ENTER })
-        assertTrue(allKeys.any { it.action == KeyAction.MODE_SWITCH })
+    }
+
+    @Test
+    fun `pc style toolbar has sticky ctrl and tab on every page`() {
+        val pages = listOf(
+            KeyboardLayouts.english(false),
+            KeyboardLayouts.numbers(Language.ENGLISH),
+            KeyboardLayouts.symbols(),
+            KeyboardLayouts.emoji(),
+            KeyboardLayouts.bengali(false)
+        )
+        pages.forEach { rows ->
+            val keys = rows.flatten()
+            assertTrue(
+                "every page must expose the sticky Ctrl key",
+                keys.any { it.action == KeyAction.CTRL_TOGGLE }
+            )
+            assertTrue(
+                "every page must expose a Tab key",
+                keys.any { it.label == "Tab" && it.text == "\t" }
+            )
+        }
+    }
+
+    @Test
+    fun `separate shortcut mode is removed`() {
+        // The dedicated shortcut keyboard no longer exists: no page may
+        // contain dedicated shortcut keys or a mode-switch key.
+        val all = KeyboardLayouts.english(false) +
+            KeyboardLayouts.numbers(Language.ENGLISH) +
+            KeyboardLayouts.symbols() +
+            KeyboardLayouts.emoji() +
+            KeyboardLayouts.bengali(false)
+        assertTrue(all.flatten().none { it.action == KeyAction.MODE_SWITCH })
+        assertTrue(all.flatten().none { it.action == KeyAction.SHORTCUT })
     }
 
     @Test
@@ -78,25 +112,11 @@ class KeyboardLayoutsTest {
     }
 
     @Test
-    fun `shortcut layout contains ctrl toggle and every shortcut`() {
-        val rows = KeyboardLayouts.shortcuts(ctrlActive = false)
-        val keys = rows.flatten()
-        assertTrue(keys.any { it.action == KeyAction.CTRL_TOGGLE })
-        val shortcutIds = keys.mapNotNull { it.shortcut }
-        assertEquals(
-            com.dualmode.keyboard.shortcuts.ShortcutId.entries.size,
-            shortcutIds.size
-        )
-        // Shortcut keys show their combo as sub label.
-        val copy = keys.first { it.shortcut == com.dualmode.keyboard.shortcuts.ShortcutId.COPY }
-        assertEquals("Ctrl+C", copy.subLabel)
-        assertEquals("Copy", copy.label)
-    }
-
-    @Test
-    fun `shortcut rows have consistent weights and mode switch`() {
-        val rows = KeyboardLayouts.shortcuts(ctrlActive = true)
-        assertTrue(rows.size >= 4)
-        assertTrue(rows.flatten().any { it.action == KeyAction.MODE_SWITCH })
+    fun `letters remain typed as plain text on the normal keyboard`() {
+        // With no dedicated shortcut page, letters are ordinary keys; the
+        // Ctrl combination logic lives in the IME service, not the layout.
+        val keys = KeyboardLayouts.english(false).flatten()
+        assertTrue(keys.none { it.shortcut != null })
+        assertTrue(keys.none { it.subLabel != null })
     }
 }

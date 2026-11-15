@@ -1,6 +1,5 @@
 package com.dualmode.keyboard.ime
 
-import com.dualmode.keyboard.data.KeyboardMode
 import com.dualmode.keyboard.data.Language
 import com.dualmode.keyboard.keyboard.KeyboardLayouts
 
@@ -12,7 +11,6 @@ class KeyboardState {
 
     enum class ShiftState { OFF, ON, LOCKED }
 
-    var mode: KeyboardMode = KeyboardMode.NORMAL
     var page: KeyboardLayouts.Page = KeyboardLayouts.Page.LETTERS
     var language: Language = Language.ENGLISH
     var shift: ShiftState = ShiftState.OFF

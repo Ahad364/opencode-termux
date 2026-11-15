@@ -1,19 +1,21 @@
 package com.dualmode.keyboard.keyboard
 
 import com.dualmode.keyboard.data.Language
-import com.dualmode.keyboard.shortcuts.ShortcutId
 
 /**
  * All keyboard layouts, built as pure data so they are easy to test and cheap
- * to (re)create. Pages: letters (EN/BN), numbers, symbols, emoji and the
- * dedicated Ctrl shortcut keyboard.
+ * to (re)create. Pages: letters (EN/BN), numbers, symbols and emoji.
+ *
+ * PC-style compact design: a sticky one-shot Ctrl modifier and a Tab key live
+ * directly in the toolbar of every page, so Ctrl+letter shortcuts (Copy,
+ * Paste, Undo, Save…) work from the normal typing keyboard — there is no
+ * separate shortcut keyboard.
  */
 object KeyboardLayouts {
 
     private val SHIFT_ICON = "⇧"
     private val BACKSPACE_ICON = "⌫"
     private val ENTER_ICON = "⏎"
-    private val MODE_ICON = "⇄"
 
     /** Main entry: builds the rows for the given state. */
     fun forState(
@@ -29,13 +31,13 @@ object KeyboardLayouts {
         Page.NUMBERS -> numbers(language)
         Page.SYMBOLS -> symbols()
         Page.EMOJI -> emoji()
-        Page.SHORTCUTS -> shortcuts(ctrlActive)
     }
 
     // ---------------------------------------------------------------- toolbar
 
     private fun toolbar(language: Language): List<Key> = listOf(
-        Key("⇄ Ctrl", KeyAction.MODE_SWITCH, isFunction = true, weight = 1.3f),
+        Key("Ctrl", KeyAction.CTRL_TOGGLE, isFunction = true, weight = 1.3f),
+        Key("Tab", KeyAction.TEXT, text = "\t", isFunction = true, weight = 1.1f),
         Key("😀", KeyAction.OPEN_EMOJI, isFunction = true, weight = 0.9f),
         Key(
             if (language == Language.ENGLISH) "EN" else "বাং",
@@ -195,69 +197,6 @@ object KeyboardLayouts {
         return listOf(toolbar(Language.BENGALI), row1, row2, row3, row4, row5, row6)
     }
 
-    // ------------------------------------------------------------ shortcuts
-
-    private fun shortcutKey(id: ShortcutId, weight: Float = 1f): Key = Key(
-        label = id.description,
-        action = KeyAction.SHORTCUT,
-        shortcut = id,
-        subLabel = id.comboLabel,
-        isFunction = false,
-        weight = weight
-    )
-
-    /**
-     * The dedicated Ctrl shortcut keyboard. Large, clearly labeled keys; the
-     * Ctrl key is a sticky toggle that stays visually active while enabled.
-     */
-    fun shortcuts(ctrlActive: Boolean): List<List<Key>> {
-        val row1 = listOf(
-            Key(
-                "Ctrl", KeyAction.CTRL_TOGGLE,
-                subLabel = if (ctrlActive) "ON" else "OFF",
-                isFunction = true, weight = 1.6f
-            ),
-            shortcutKey(ShortcutId.COPY, 2.1f),
-            shortcutKey(ShortcutId.CUT, 2.1f),
-            shortcutKey(ShortcutId.PASTE, 2.1f),
-            shortcutKey(ShortcutId.SELECT_ALL, 2.1f)
-        )
-        val row2 = listOf(
-            shortcutKey(ShortcutId.UNDO, 2f),
-            shortcutKey(ShortcutId.REDO, 2f),
-            shortcutKey(ShortcutId.BOLD, 2f),
-            shortcutKey(ShortcutId.ITALIC, 2f),
-            shortcutKey(ShortcutId.CENTER, 2f)
-        )
-        val row3 = listOf(
-            shortcutKey(ShortcutId.SAVE, 2f),
-            shortcutKey(ShortcutId.PRINT, 2f),
-            shortcutKey(ShortcutId.OPEN, 2f),
-            shortcutKey(ShortcutId.NEW_DOC, 2f),
-            shortcutKey(ShortcutId.FIND, 2f)
-        )
-        val row4 = listOf(
-            Key("⇄ ABC", KeyAction.MODE_SWITCH, isFunction = true, weight = 1.6f),
-            Key("123", KeyAction.OPEN_NUMBERS, isFunction = true, weight = 1.2f),
-            Key("space", KeyAction.SPACE, text = " ", weight = 3.6f),
-            Key(BACKSPACE_ICON, KeyAction.BACKSPACE, isFunction = true, weight = 1.5f),
-            Key(ENTER_ICON, KeyAction.ENTER, isFunction = true, weight = 1.6f)
-        )
-        val row5 = listOf(
-            Key("😀", KeyAction.OPEN_EMOJI, isFunction = true, weight = 1f),
-            Key(
-                "EN", KeyAction.LANGUAGE_SWITCH, isFunction = true, weight = 1f
-            ),
-            Key("-", KeyAction.TEXT, text = "-", weight = 1f),
-            Key("_", KeyAction.TEXT, text = "_", weight = 1f),
-            Key(":", KeyAction.TEXT, text = ":", weight = 1f),
-            Key("/", KeyAction.TEXT, text = "/", weight = 1f),
-            Key("@", KeyAction.TEXT, text = "@", weight = 1f),
-            Key(".", KeyAction.TEXT, text = ".", weight = 1f, alternates = listOf(",", "?", "!"))
-        )
-        return listOf(row1, row2, row3, row4, row5)
-    }
-
-    /** Pages the keyboard can be in (SHORTCUTS = the Ctrl shortcut keyboard). */
-    enum class Page { LETTERS, NUMBERS, SYMBOLS, EMOJI, SHORTCUTS }
+    /** Pages the keyboard can be in. */
+    enum class Page { LETTERS, NUMBERS, SYMBOLS, EMOJI }
 }
