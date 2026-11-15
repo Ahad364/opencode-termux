@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Dual Mode Keyboard</string>
+    <string name="back">Back</string>
+    <string name="enable_keyboard">Enable keyboard</string>
+    <string name="choose_keyboard">Choose keyboard</string>
+    <string name="preview_title">Keyboard preview</string>
+    <string name="theme_title">Themes &amp; colors</string>
+    <string name="shortcuts_title">Ctrl shortcut manager</string>
+    <string name="language_title">Languages</string>
+    <string name="size_title">Keyboard size</string>
+    <string name="sound_title">Sound</string>
+    <string name="vibration_title">Vibration</string>
+    <string name="animation_title">Animations</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="about_title">About</string>
+    <string name="subtype_english">English (US)</string>
+    <string name="subtype_bengali">Bengali</string>
+    <string name="ime_name">Dual Mode Keyboard</string>
+</resources>

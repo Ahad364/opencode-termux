@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- IME registration: two subtypes (English and Bengali). -->
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:supportsSwitchingToNextInputMethod="true">
+
+    <subtype
+        android:imeSubtypeId="1001"
+        android:imeSubtypeLocale="en_US"
+        android:imeSubtypeMode="keyboard"
+        android:isDefault="true"
+        android:label="@string/subtype_english" />
+
+    <subtype
+        android:imeSubtypeId="1002"
+        android:imeSubtypeLocale="bn_BD"
+        android:imeSubtypeMode="keyboard"
+        android:isDefault="false"
+        android:label="@string/subtype_bengali" />
+</input-method>
