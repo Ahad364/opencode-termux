@@ -52,5 +52,16 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
 
+    // kotlin-stdlib 1.8.20+ merged the jdk7/jdk8 variants; without these
+    // constraints, transitive 1.6.x artifacts cause duplicate-class errors.
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") {
+            because "kotlin-stdlib 1.8.22 includes the jdk7 classes"
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") {
+            because "kotlin-stdlib 1.8.22 includes the jdk8 classes"
+        }
+    }
+
     testImplementation 'junit:junit:4.13.2'
 }
