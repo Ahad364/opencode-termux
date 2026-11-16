@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/title_settings"
+            android:textColor="@color/brand_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- General -->
+        <LinearLayout style="@style/BrandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_general" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_theme" />
+                <Button
+                    android:id="@+id/btn_theme"
+                    style="@style/BrandButtonSecondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_open_themes" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_layout" />
+                <Button
+                    android:id="@+id/btn_layout"
+                    style="@style/BrandButtonSecondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_open_layouts" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_toolbar" />
+                <Spinner
+                    android:id="@+id/spinner_toolbar"
+                    android:layout_width="160dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_button_secondary"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_height" />
+                <TextView
+                    android:id="@+id/label_height"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_height"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_height_landscape" />
+                <TextView
+                    android:id="@+id/label_height_landscape"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_height_landscape"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Typing -->
+        <LinearLayout style="@style/BrandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_typing" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_sound" />
+                <Switch
+                    android:id="@+id/switch_sound"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_vibrate" />
+                <Switch
+                    android:id="@+id/switch_vibrate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_repeat" />
+                <Switch
+                    android:id="@+id/switch_repeat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_repeat_delay" />
+                <TextView
+                    android:id="@+id/label_repeat_delay"
+                    android:layout_width="64dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_repeat_delay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_repeat_rate" />
+                <TextView
+                    android:id="@+id/label_repeat_rate"
+                    android:layout_width="64dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_repeat_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_sticky" />
+                <Switch
+                    android:id="@+id/switch_sticky"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_sticky_summary"
+                android:textColor="@color/brand_text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Appearance -->
+        <LinearLayout style="@style/BrandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_appearance" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_preview" />
+                <Switch
+                    android:id="@+id/switch_preview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_border" />
+                <Switch
+                    android:id="@+id/switch_border"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_font" />
+                <TextView
+                    android:id="@+id/label_font"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_font"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_radius" />
+                <TextView
+                    android:id="@+id/label_radius"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_radius"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout style="@style/SettingRow">
+                <TextView style="@style/SettingLabel"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setting_gap" />
+                <TextView
+                    android:id="@+id/label_gap"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="@color/brand_text_secondary" />
+            </LinearLayout>
+            <SeekBar
+                android:id="@+id/seek_gap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_reset"
+            style="@style/BrandButtonSecondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/reset_settings" />
+    </LinearLayout>
+</ScrollView>

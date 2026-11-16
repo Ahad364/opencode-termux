@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Coding Keys</string>
+    <string name="ime_name">Coding Keys</string>
+    <string name="ime_subtype">English (US) - Programming</string>
+
+    <!-- Dashboard -->
+    <string name="status_ime_enabled">Enabled in system</string>
+    <string name="status_ime_disabled">Not enabled yet</string>
+    <string name="status_ime_default">Active keyboard</string>
+    <string name="status_ime_not_default">Not the default keyboard</string>
+    <string name="action_enable_ime">Enable Coding Keys</string>
+    <string name="action_switch_ime">Switch keyboard</string>
+    <string name="action_try_keyboard">Try the keyboard</string>
+    <string name="card_status_title">Keyboard status</string>
+    <string name="card_quick_title">Quick settings</string>
+    <string name="card_preview_title">Theme preview</string>
+    <string name="card_about_title">About</string>
+    <string name="btn_open_settings">Settings</string>
+    <string name="btn_open_themes">Themes</string>
+    <string name="btn_open_layouts">Layouts</string>
+    <string name="btn_open_symbols">Symbol editor</string>
+    <string name="try_hint">Tap here and type…</string>
+    <string name="privacy_note">No internet permission. Nothing you type ever leaves your device.</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_license">Licensed under GNU GPL-3.0-or-later. Derived from CodeBoard by Gazala Muhamed.</string>
+
+    <!-- Settings -->
+    <string name="title_settings">Settings</string>
+    <string name="title_themes">Themes</string>
+    <string name="title_layouts">Layouts</string>
+    <string name="title_symbol_editor">Symbol editor</string>
+    <string name="section_general">General</string>
+    <string name="section_typing">Typing</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="section_layout">Layout</string>
+    <string name="setting_enable_ime">Enable Coding Keys</string>
+    <string name="setting_default_ime">Set as default keyboard</string>
+    <string name="setting_sound">Keypress sound</string>
+    <string name="setting_vibrate">Vibration</string>
+    <string name="setting_preview">Key pop-up preview</string>
+    <string name="setting_border">Keyboard border</string>
+    <string name="setting_repeat">Key repeat</string>
+    <string name="setting_sticky">Sticky modifiers</string>
+    <string name="setting_sticky_summary">Keep Ctrl/Alt on until pressed again</string>
+    <string name="setting_repeat_delay">Repeat delay (ms)</string>
+    <string name="setting_repeat_rate">Repeat rate (ms)</string>
+    <string name="setting_height">Keyboard height (portrait)</string>
+    <string name="setting_height_landscape">Keyboard height (landscape)</string>
+    <string name="setting_font">Key font size</string>
+    <string name="setting_radius">Key corner radius</string>
+    <string name="setting_gap">Key spacing</string>
+    <string name="setting_toolbar">Toolbar row</string>
+    <string name="toolbar_editing">Editing tools</string>
+    <string name="toolbar_navigation">Navigation keys</string>
+    <string name="toolbar_hidden">Hidden</string>
+    <string name="setting_theme">Theme</string>
+    <string name="setting_layout">Keyboard layout</string>
+    <string name="reset_settings">Reset all settings</string>
+    <string name="reset_done">Settings restored to defaults</string>
+
+    <!-- Layouts -->
+    <string name="layout_qwerty">QWERTY</string>
+    <string name="layout_azerty">AZERTY</string>
+    <string name="layout_qwertz">QWERTZ</string>
+    <string name="layout_dvorak">DVORAK</string>
+    <string name="open_symbol_editor">Customize symbol rows</string>
+
+    <!-- Symbol editor -->
+    <string name="sym_editor_hint_symbols">Symbol page rows - each character becomes one key</string>
+    <string name="sym_editor_hint_prog">Programming page rows</string>
+    <string name="sym_editor_hint_bottom">Bottom row characters (left half before space, right half after)</string>
+    <string name="sym_editor_add_row">Add row</string>
+    <string name="sym_editor_restore">Restore defaults</string>
+    <string name="sym_editor_save">Save</string>
+    <string name="sym_editor_move_up">Move up</string>
+    <string name="sym_editor_move_down">Move down</string>
+    <string name="sym_editor_remove">Remove row</string>
+    <string name="sym_editor_saved">Symbol layout saved</string>
+    <string name="sym_editor_preview">Live preview</string>
+
+    <!-- Themes -->
+    <string name="theme_custom_section">Custom theme colors</string>
+    <string name="theme_apply">Apply theme</string>
+    <string name="theme_applied">Theme applied</string>
+    <string name="theme_custom_pick">Edit custom theme</string>
+    <string name="color_background">Background</string>
+    <string name="color_gradient_end">Gradient end (empty = flat)</string>
+    <string name="color_key">Keys</string>
+    <string name="color_special">Special keys</string>
+    <string name="color_modifier">Modifier keys</string>
+    <string name="color_action">Action key</string>
+    <string name="color_text">Key text</string>
+</resources>

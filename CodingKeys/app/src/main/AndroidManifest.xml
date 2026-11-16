@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Privacy-first: the ONLY permission Coding Keys requests.
+         No INTERNET permission exists in this manifest, so the keyboard
+         is physically unable to transmit keystrokes or clipboard content. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <!-- The IME service. Android binds this service and shows Coding Keys
+             in the system keyboard picker. -->
+        <service
+            android:name=".CodingKeysIME"
+            android:label="@string/ime_name"
+            android:permission="android.permission.BIND_INPUT_METHOD"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
+        </service>
+
+        <!-- Main dashboard: activation status, quick settings, theme preview. -->
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".settings.SettingsActivity"
+            android:label="@string/title_settings"
+            android:exported="false" />
+
+        <activity
+            android:name=".settings.ThemeActivity"
+            android:label="@string/title_themes"
+            android:exported="false" />
+
+        <activity
+            android:name=".settings.LayoutActivity"
+            android:label="@string/title_layouts"
+            android:exported="false" />
+
+        <activity
+            android:name=".settings.SymbolEditorActivity"
+            android:label="@string/title_symbol_editor"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
+
+</manifest>

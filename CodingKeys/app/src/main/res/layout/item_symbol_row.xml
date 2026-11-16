@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One editable symbol row: reorder / delete controls + the row content. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingBottom="6dp">
+
+    <ImageButton
+        android:id="@+id/btn_up"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_button_secondary"
+        android:contentDescription="@string/sym_editor_move_up"
+        android:src="@drawable/ic_arrow_up"
+        android:tint="@color/brand_text_primary" />
+
+    <ImageButton
+        android:id="@+id/btn_down"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/bg_button_secondary"
+        android:contentDescription="@string/sym_editor_move_down"
+        android:src="@drawable/ic_arrow_down"
+        android:tint="@color/brand_text_primary" />
+
+    <ImageButton
+        android:id="@+id/btn_remove"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/bg_button_secondary"
+        android:contentDescription="@string/sym_editor_remove"
+        android:src="@drawable/ic_forward_delete"
+        android:tint="@color/brand_text_primary" />
+
+    <EditText
+        android:id="@+id/edit_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_button_secondary"
+        android:importantForAutofill="no"
+        android:inputType="textNoSuggestions"
+        android:padding="10dp"
+        android:textColor="@color/brand_text_primary" />
+</LinearLayout>

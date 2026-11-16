@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Coding Keys brand palette: premium blue / dark navy / purple -->
+    <color name="brand_navy">#FF0B1A3A</color>
+    <color name="brand_blue">#FF3E6BD6</color>
+    <color name="brand_blue_light">#FF6C8FF5</color>
+    <color name="brand_purple">#FF7C4DFF</color>
+    <color name="brand_purple_deep">#FF452781</color>
+    <color name="brand_surface">#FF0E1730</color>
+    <color name="brand_card">#FF16224A</color>
+    <color name="brand_card_stroke">#FF26356B</color>
+    <color name="brand_text_primary">#FFF2F5FF</color>
+    <color name="brand_text_secondary">#FFA9B6DF</color>
+    <color name="brand_status_ok">#FF69F0AE</color>
+    <color name="brand_status_warn">#FFFFB74D</color>
+    <color name="brand_danger">#FFFF7043</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="ic_launcher_background">#FF0B1A3A</color>
+</resources>

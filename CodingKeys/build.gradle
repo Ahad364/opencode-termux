@@ -1,0 +1,9 @@
+// Coding Keys - top-level build file
+// Build tooling versions are kept compatible: Gradle 8.9 (wrapper) + AGP 8.7.3 + JDK 17.
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

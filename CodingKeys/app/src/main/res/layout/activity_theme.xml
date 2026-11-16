@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/title_themes"
+            android:textColor="@color/brand_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Built-in theme list is populated by code -->
+        <LinearLayout style="@style/BrandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_theme" />
+
+            <RadioGroup
+                android:id="@+id/theme_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- Theme preview -->
+        <LinearLayout style="@style/BrandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/card_preview_title" />
+
+            <FrameLayout
+                android:id="@+id/preview_container"
+                android:layout_width="match_parent"
+                android:layout_height="170dp" />
+        </LinearLayout>
+
+        <!-- Custom theme editor -->
+        <LinearLayout style="@style/BrandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/CardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/theme_custom_section" />
+
+            <EditText
+                android:id="@+id/custom_background"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_background"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+
+            <EditText
+                android:id="@+id/custom_gradient"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_gradient_end"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+
+            <EditText
+                android:id="@+id/custom_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_key"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+
+            <EditText
+                android:id="@+id/custom_special"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_special"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+
+            <EditText
+                android:id="@+id/custom_modifier"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_modifier"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+
+            <EditText
+                android:id="@+id/custom_action"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_action"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+
+            <EditText
+                android:id="@+id/custom_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/color_text"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:textColor="@color/brand_text_primary" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_apply_custom"
+            style="@style/BrandButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/theme_apply" />
+    </LinearLayout>
+</ScrollView>
