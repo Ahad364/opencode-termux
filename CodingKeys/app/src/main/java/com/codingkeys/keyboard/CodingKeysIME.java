@@ -189,11 +189,42 @@ public class CodingKeysIME extends InputMethodService
             rebuildKeyboard();
             return;
         }
-        // Reused view: re-dispatch the live window insets so the navigation
-        // bar spacing is recalculated for THIS open. Posted so it runs after
-        // the view is attached to the (possibly re-shown) window.
+        // Reused view: re-sync the live window insets so the navigation bar
+        // spacing is recalculated for THIS open (covers IME switch-back too).
         final KeyboardLayoutView view = currentView;
-        view.post(() -> ViewCompat.requestApplyInsets(view));
+        scheduleInsetsResync(view);
+    }
+
+    /**
+     * Force the platform to re-dispatch the CURRENT window insets into the
+     * keyboard view across the whole show sequence.
+     *
+     * Why more than one attempt: InputMethodService.onWindowShown() fires
+     * BEFORE the window is actually shown (InputMethodService.showWindow()
+     * calls onWindowShown() and only then mWindow.show()). On the first open
+     * the insets state is continuous and one re-dispatch lands fine. On an
+     * IME switch (space-bar switcher -> other keyboard -> back) the service is
+     * unbound/rebound or the window is re-created, so the insets state is
+     * mid-transition exactly when our single re-dispatch used to run - nothing
+     * corrected it afterwards and the view kept inset = 0 (keys behind the
+     * 3-button bar). Re-requesting immediately, after attach and one frame
+     * later guarantees one request lands after the window established its
+     * final insets, however the switch was carried out.
+     *
+     * Safe by construction: values always come from the platform dispatch for
+     * THIS window (never from another keyboard's window), and the setter in
+     * KeyboardLayoutView is change-guarded, so repeated requests can never
+     * double-pad or apply the navigation bar height twice.
+     */
+    private void scheduleInsetsResync(final KeyboardLayoutView view) {
+        // Immediate: works when the view is already attached (retained view).
+        ViewCompat.requestApplyInsets(view);
+        // After attach / next Looper drain: fresh views queue until attached.
+        view.post(() -> {
+            ViewCompat.requestApplyInsets(view);
+            // One frame later: after the window show traversal has run.
+            view.post(() -> ViewCompat.requestApplyInsets(view));
+        });
     }
 
     /**
@@ -231,7 +262,9 @@ public class CodingKeysIME extends InputMethodService
         super.onWindowShown();
         if (currentView != null) {
             final KeyboardLayoutView view = currentView;
-            view.post(() -> ViewCompat.requestApplyInsets(view));
+            // Recalculate positioning from live insets on EVERY activation:
+            // first open, reopen, and switching back from another keyboard.
+            scheduleInsetsResync(view);
         }
     }
 
