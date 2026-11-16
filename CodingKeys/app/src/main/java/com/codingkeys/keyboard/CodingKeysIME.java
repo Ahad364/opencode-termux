@@ -84,6 +84,16 @@ public class CodingKeysIME extends InputMethodService
     private AudioManager audioManager;
     private Vibrator vibrator;
 
+    /**
+     * Last real system-bar insets reported by the platform listener. A newly
+     * built keyboard view is seeded with these synchronously, so its very
+     * first measurement already includes the navigation bar strip and never
+     * depends on whether/when the insets dispatch arrives.
+     */
+    private int cachedInsetLeft = 0;
+    private int cachedInsetRight = 0;
+    private int cachedInsetBottom = 0;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -301,6 +311,11 @@ public class CodingKeysIME extends InputMethodService
             Collection<Key> keys = builder.build();
             currentView = uiFactory.createKeyboardView(this, keys);
             attachNavigationBarInsetsHandling(currentView);
+            // Seed with the last real system-bar insets so the very first
+            // measurement already includes the navigation bar strip and never
+            // depends on whether/when the insets dispatch arrives.
+            currentView.setNavigationBarInsets(
+                    cachedInsetLeft, cachedInsetRight, cachedInsetBottom);
             builtForPage = page;
             builtForFingerprint = fingerprint;
             return currentView;
@@ -315,6 +330,8 @@ public class CodingKeysIME extends InputMethodService
                 uiFactory != null ? uiFactory.uiTheme
                         : UiTheme.buildFromInfo(ThemeManager.resolve(preferences)));
         attachNavigationBarInsetsHandling(fallback);
+        fallback.setNavigationBarInsets(
+                cachedInsetLeft, cachedInsetRight, cachedInsetBottom);
         builtForPage = page;
         builtForFingerprint = fingerprint;
         return fallback;
@@ -342,6 +359,11 @@ public class CodingKeysIME extends InputMethodService
             // otherwise shadow the androidx type inside this class.
             androidx.core.graphics.Insets bars =
                     insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // Remember the real platform values so any view built later can be
+            // seeded synchronously and never depends on dispatch timing.
+            cachedInsetLeft = bars.left;
+            cachedInsetRight = bars.right;
+            cachedInsetBottom = bars.bottom;
             view.setNavigationBarInsets(bars.left, bars.right, bars.bottom);
             // Consumed: children (key buttons) must not apply the insets again.
             return WindowInsetsCompat.CONSUMED;
@@ -359,8 +381,23 @@ public class CodingKeysIME extends InputMethodService
     }
 
     private void rebuildKeyboard() {
+        // Idempotence guard: KeyboardStateManager.reset() fires onPageChanged
+        // unconditionally on every input session, even when the page did not
+        // change. Rebuilding there would tear down the correctly padded view
+        // and swap in a fresh one that is not guaranteed an insets pass (the
+        // platform dispatches insets on window creation and on insets changes,
+        // not on view swaps into a live window) - the direct cause of the
+        // alternating correct/incorrect positioning across opens. When the
+        // current view already matches this page and layout, keep it.
+        int page = stateManager.getCurrentPage();
+        String fingerprint = layoutFingerprint();
+        if (currentView != null && builtForPage == page
+                && fingerprint.equals(builtForFingerprint)) {
+            updateModifierViews();
+            return;
+        }
         applyPreferencesToFactory();
-        KeyboardLayoutView view = buildPage(stateManager.getCurrentPage());
+        KeyboardLayoutView view = buildPage(page);
         setInputView(view);
         updateModifierViews();
     }
