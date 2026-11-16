@@ -24,7 +24,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -243,7 +242,10 @@ public class CodingKeysIME extends InputMethodService
      */
     private void attachNavigationBarInsetsHandling(KeyboardLayoutView view) {
         ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // Fully qualified: the inherited InputMethodService.Insets would
+            // otherwise shadow the androidx type inside this class.
+            androidx.core.graphics.Insets bars =
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars());
             view.setNavigationBarInsets(bars.left, bars.right, bars.bottom);
             // Consumed: children (key buttons) must not apply the insets again.
             return WindowInsetsCompat.CONSUMED;
