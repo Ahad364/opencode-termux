@@ -40,11 +40,11 @@ public class KeyboardDefinitionsTest {
     }
 
     @Test
-    public void dvorakRows_produceTwentyEightKeys() throws KeyboardLayoutException {
+    public void dvorakRows_produceTwentyNineKeys() throws KeyboardLayoutException {
         KeyboardLayoutBuilder builder = new KeyboardLayoutBuilder(null);
         builder.setBox(Box.create(0, 0, 1, 1));
         KeyboardDefinitions.addDvorakRows(builder);
-        assertEquals(28, builder.build().size());
+        assertEquals(29, builder.build().size());
     }
 
     @Test
