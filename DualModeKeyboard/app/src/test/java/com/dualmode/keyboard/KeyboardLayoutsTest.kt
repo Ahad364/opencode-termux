@@ -126,16 +126,26 @@ class KeyboardLayoutsTest {
     }
 
     @Test
-    fun `coding layout has modifiers arrows and escape`() {
+    fun `coding layout has modifiers arrows shift and escape`() {
         val keys = KeyboardLayouts.coding(Language.ENGLISH).flatten()
         assertTrue(keys.any { it.label == "ESC" && it.action == KeyAction.ESC })
         assertTrue(keys.any { it.label == "Ctrl" && it.action == KeyAction.CTRL_TOGGLE })
         assertTrue(keys.any { it.label == "Alt" && it.action == KeyAction.ALT_TOGGLE })
         assertTrue(keys.any { it.label == "Fn" && it.action == KeyAction.FN_TOGGLE })
+        // CodeBoard-style: shift enables arrow-key text selection.
+        assertTrue(keys.any { it.action == KeyAction.SHIFT })
         assertTrue(keys.any { it.action == KeyAction.ARROW_LEFT })
         assertTrue(keys.any { it.action == KeyAction.ARROW_UP })
         assertTrue(keys.any { it.action == KeyAction.ARROW_DOWN })
         assertTrue(keys.any { it.action == KeyAction.ARROW_RIGHT })
+    }
+
+    @Test
+    fun `coding tab sends a real tab key event`() {
+        // CodeBoard parity: Tab is a KEYCODE_TAB key event on the coding
+        // keyboard (indent handling), not a committed tab character.
+        val keys = KeyboardLayouts.coding(Language.ENGLISH).flatten()
+        assertTrue(keys.any { it.label == "Tab" && it.action == KeyAction.TAB })
     }
 
     @Test

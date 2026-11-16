@@ -64,6 +64,7 @@ class KeyboardView @JvmOverloads constructor(
     var ctrlActive: Boolean = false
     var altActive: Boolean = false
     var fnActive: Boolean = false
+    var shiftActive: Boolean = false
         set(value) {
             field = value
             invalidate()
@@ -107,15 +108,20 @@ class KeyboardView @JvmOverloads constructor(
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
     private var downX = 0f
     private var downY = 0f
-    private var repeatingBackspace = false
+    private var repeatingKey: Key? = null
 
     private val repeatRunnable = object : Runnable {
         override fun run() {
-            if (!repeatingBackspace) return
-            fire(BACKSPACE_KEY)
+            val key = repeatingKey ?: return
+            fire(key)
             handler.postDelayed(this, REPEAT_INTERVAL_MS)
         }
     }
+
+    /** Keys that keep firing while held (CodeBoard's .asRepeatable()). */
+    private fun isRepeatable(action: KeyAction): Boolean = action == KeyAction.BACKSPACE ||
+        action == KeyAction.ARROW_LEFT || action == KeyAction.ARROW_UP ||
+        action == KeyAction.ARROW_DOWN || action == KeyAction.ARROW_RIGHT
 
     private val popupRunnable = Runnable {
         val rect = pressedRect ?: return@Runnable
@@ -124,7 +130,6 @@ class KeyboardView @JvmOverloads constructor(
         showPopup(key, rect)
     }
 
-    private val BACKSPACE_KEY = Key("⌫", KeyAction.BACKSPACE, isFunction = true)
 
     init {
         applyTypefaces()
@@ -214,11 +219,13 @@ class KeyboardView @JvmOverloads constructor(
         val isPressed = key === pressedKey && popup == null
         val isToggle = key.action == KeyAction.CTRL_TOGGLE ||
             key.action == KeyAction.ALT_TOGGLE ||
-            key.action == KeyAction.FN_TOGGLE
+            key.action == KeyAction.FN_TOGGLE ||
+            key.action == KeyAction.SHIFT
         val toggleOn = when (key.action) {
             KeyAction.CTRL_TOGGLE -> ctrlActive
             KeyAction.ALT_TOGGLE -> altActive
             KeyAction.FN_TOGGLE -> fnActive
+            KeyAction.SHIFT -> shiftActive
             else -> false
         }
         val isShortcut = key.action == KeyAction.SHORTCUT
@@ -382,9 +389,9 @@ class KeyboardView @JvmOverloads constructor(
                     kr.key.hasAlternates && popupsEnabled -> {
                         handler.postDelayed(popupRunnable, LONG_PRESS_MS)
                     }
-                    kr.key.action == KeyAction.BACKSPACE -> {
+                    isRepeatable(kr.key.action) -> {
                         fire(kr.key)
-                        repeatingBackspace = true
+                        repeatingKey = kr.key
                         handler.postDelayed(repeatRunnable, REPEAT_DELAY_MS)
                     }
                     else -> fire(kr.key)
@@ -416,7 +423,7 @@ class KeyboardView @JvmOverloads constructor(
                     // Keys with alternates commit on UP so a long-press can open
                     // the popup instead of typing the primary character.
                     val key = pressedKey
-                    if (key != null && key.hasAlternates && popupsEnabled && !repeatingBackspace) {
+                    if (key != null && key.hasAlternates && popupsEnabled && repeatingKey == null) {
                         fire(key)
                     }
                 }
@@ -451,7 +458,7 @@ class KeyboardView @JvmOverloads constructor(
         pressedKey = null
         pressedRect = null
         pressedIsShortcut = false
-        repeatingBackspace = false
+        repeatingKey = null
         popup = null
         invalidate()
     }

@@ -82,13 +82,14 @@ object KeyboardLayouts {
             Key("Ctrl", KeyAction.CTRL_TOGGLE, isFunction = true, weight = 1.2f),
             Key("Alt", KeyAction.ALT_TOGGLE, isFunction = true, weight = 1.1f),
             Key("Fn", KeyAction.FN_TOGGLE, isFunction = true, weight = 1.1f),
-            Key("←", KeyAction.ARROW_LEFT, isFunction = true, weight = 1f),
-            Key("↑", KeyAction.ARROW_UP, isFunction = true, weight = 1f),
-            Key("↓", KeyAction.ARROW_DOWN, isFunction = true, weight = 1f),
-            Key("→", KeyAction.ARROW_RIGHT, isFunction = true, weight = 1f)
+            Key(SHIFT_ICON, KeyAction.SHIFT, isFunction = true, weight = 1f),
+            Key("←", KeyAction.ARROW_LEFT, isFunction = true, weight = 0.9f),
+            Key("↑", KeyAction.ARROW_UP, isFunction = true, weight = 0.9f),
+            Key("↓", KeyAction.ARROW_DOWN, isFunction = true, weight = 0.9f),
+            Key("→", KeyAction.ARROW_RIGHT, isFunction = true, weight = 0.9f)
         )
         val row2 = listOf(
-            Key("Tab", KeyAction.TEXT, text = "\t", isFunction = true, weight = 1.4f),
+            Key("Tab", KeyAction.TAB, isFunction = true, weight = 1.4f),
             sym('{'), sym('}'), sym('['), sym(']'), sym('('), sym(')'),
             sym('<'), sym('>'),
             Key(BACKSPACE_ICON, KeyAction.BACKSPACE, isFunction = true, weight = 1.4f)

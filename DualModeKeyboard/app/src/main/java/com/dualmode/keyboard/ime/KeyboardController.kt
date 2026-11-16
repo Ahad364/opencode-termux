@@ -71,6 +71,7 @@ class KeyboardController(
         view.ctrlActive = state.ctrlActive
         view.altActive = state.altActive
         view.fnActive = state.fnActive
+        view.shiftActive = state.isShifted
         view.listener = viewListener
         view.rows = KeyboardLayouts.forState(
             page = state.currentPage(),

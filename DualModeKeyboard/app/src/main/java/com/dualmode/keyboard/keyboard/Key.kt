@@ -9,6 +9,8 @@ enum class KeyAction {
     ENTER,
     SPACE,
     SHIFT,
+    /** Sends a real Tab key event (coding keyboard; CodeBoard-style). */
+    TAB,
     OPEN_NUMBERS,
     OPEN_SYMBOLS,
     OPEN_EMOJI,

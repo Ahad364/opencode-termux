@@ -93,9 +93,7 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
         super.onStartInputView(editorInfo, restarting)
         profile = EditorHandler.analyze(editorInfo)
         state.disablePopups = profile.type == EditorHandler.FieldType.PASSWORD
-        state.ctrlActive = false
-        state.altActive = false
-        state.fnActive = false
+        releaseHeldModifiers()
         state.shift = KeyboardState.ShiftState.OFF
         state.language = settings.defaultLanguage
         state.page = EditorHandler.initialPage(profile)
@@ -103,6 +101,17 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
     }
 
     override fun onEvaluateFullscreenMode(): Boolean = false
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        // Never leave the editor believing Ctrl is still held.
+        releaseHeldModifiers()
+        super.onFinishInputView(finishingInput)
+    }
+
+    override fun onWindowHidden() {
+        super.onWindowHidden()
+        releaseHeldModifiers()
+    }
 
     // ------------------------------------------------------- key dispatch
 
@@ -152,22 +161,41 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
                 consumeFn()
             }
             KeyAction.SHIFT -> state.toggleShift()
+            KeyAction.TAB -> {
+                // CodeBoard-style: real Tab key event (indent in code editors,
+                // focus move in apps that use it) with current modifiers.
+                KeyEventSender.sendKeyCode(ic, "KEYCODE_TAB", heldMetaState())
+                state.consumeShiftAfterText()
+                consumeCtrl()
+            }
             KeyAction.OPEN_NUMBERS -> state.openPage(KbPage.NUMBERS)
             KeyAction.OPEN_SYMBOLS -> state.openPage(KbPage.SYMBOLS)
             KeyAction.OPEN_EMOJI -> state.openPage(KbPage.EMOJI)
             KeyAction.BACK_TO_LETTERS -> state.openPage(KbPage.LETTERS)
             KeyAction.SWITCH_SYMBOL_PAGE -> state.openPage(KbPage.SYMBOLS)
             KeyAction.LANGUAGE_SWITCH -> state.toggleLanguage()
-            KeyAction.CTRL_TOGGLE -> state.toggleCtrl()
+            KeyAction.CTRL_TOGGLE -> {
+                state.toggleCtrl()
+                // CodeBoard-style held modifier: the editor physically sees
+                // Ctrl pressed while sticky, and released when it resets.
+                currentInputConnection?.sendKeyEvent(
+                    KeyEvent(
+                        if (state.ctrlActive) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_CTRL_LEFT
+                    )
+                )
+            }
             KeyAction.CODE_TOGGLE -> state.openPage(
                 if (state.page == KbPage.CODE) KbPage.LETTERS else KbPage.CODE
             )
             KeyAction.ALT_TOGGLE -> state.toggleAlt()
             KeyAction.FN_TOGGLE -> state.toggleFn()
             KeyAction.ESC -> {
-                if (!KeyEventSender.sendKeyCode(ic, "KEYCODE_ESCAPE")) {
+                if (!KeyEventSender.sendKeyCode(ic, "KEYCODE_ESCAPE", heldMetaState())) {
                     toast("Editor did not accept ESC")
                 }
+                state.consumeShiftAfterText()
+                consumeCtrl()
             }
             KeyAction.ARROW_LEFT -> arrow(ic, "KEYCODE_DPAD_LEFT", "KEYCODE_MOVE_HOME")
             KeyAction.ARROW_UP -> arrow(ic, "KEYCODE_DPAD_UP", "KEYCODE_PAGE_UP")
@@ -175,6 +203,9 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
             KeyAction.ARROW_RIGHT -> arrow(ic, "KEYCODE_DPAD_RIGHT", "KEYCODE_MOVE_END")
             KeyAction.SHORTCUT -> key.shortcut?.let {
                 toast(shortcutExecutor.execute(ic, it).message)
+                consumeCtrl()
+                consumeAlt()
+                consumeFn()
             }
             // Reserved action kept for API stability; no layout emits it
             // since the dedicated shortcut keyboard was removed.
@@ -266,20 +297,58 @@ class KeyboardService : InputMethodService(), KeyboardView.Listener {
     }
 
     /**
-     * Arrow keys move the cursor with DPAD key events. While Fn is active they
-     * jump Home/End/PageUp/PageDown instead (laptop-style), and Fn resets.
+     * Current modifier flags for key events (CodeBoard-style meta
+     * composition): Shift selects, Ctrl combines — e.g. Shift+arrow extends
+     * the selection, Shift+Tab outdents.
+     */
+    private fun heldMetaState(): Int {
+        var meta = 0
+        if (state.isShifted) meta = meta or KeyEvent.META_SHIFT_LEFT_ON
+        if (state.ctrlActive) meta = meta or KeyEvent.META_CTRL_ON
+        return meta
+    }
+
+    /**
+     * Arrows move the cursor with DPAD key events; while Fn is active they
+     * jump Home/End/PageUp/PageDown instead (laptop-style). Shift+arrow
+     * extends the selection (CodeBoard behavior); modifiers reset after.
      */
     private fun arrow(ic: InputConnection?, plain: String, withFn: String) {
         val fnHeld = state.fnActive
-        if (!KeyEventSender.sendKeyCode(ic, if (fnHeld) withFn else plain)) {
+        if (!KeyEventSender.sendKeyCode(ic, if (fnHeld) withFn else plain, heldMetaState())) {
             toast("No editor to navigate")
         }
         if (fnHeld) consumeFn()
+        state.consumeShiftAfterText()
+        consumeCtrl()
     }
 
     /** One-shot semantics: Ctrl deactivates after being applied to a key. */
     private fun consumeCtrl() {
-        if (state.ctrlActive) state.toggleCtrl()
+        if (state.ctrlActive) {
+            state.toggleCtrl()
+            // CodeBoard-style: release the held Ctrl key event in the editor.
+            currentInputConnection?.sendKeyEvent(
+                KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_CTRL_LEFT)
+            )
+        }
+    }
+
+    /**
+     * Releases every held modifier state (CodeBoard releases its modifiers
+     * when the keyboard view regenerates or the input changes): the held Ctrl
+     * key event is released so no editor is left believing Ctrl is pressed,
+     * and all sticky flags reset.
+     */
+    private fun releaseHeldModifiers() {
+        if (state.ctrlActive) {
+            currentInputConnection?.sendKeyEvent(
+                KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_CTRL_LEFT)
+            )
+            state.ctrlActive = false
+        }
+        state.altActive = false
+        state.fnActive = false
     }
 
     private fun consumeAlt() {
