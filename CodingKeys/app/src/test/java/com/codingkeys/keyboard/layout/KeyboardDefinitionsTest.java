@@ -16,27 +16,27 @@ import java.util.List;
 public class KeyboardDefinitionsTest {
 
     @Test
-    public void qwertyRows_produceTwentySevenKeys() throws KeyboardLayoutException {
+    public void qwertyRows_produceTwentyEightKeys() throws KeyboardLayoutException {
         KeyboardLayoutBuilder builder = new KeyboardLayoutBuilder(null);
         builder.setBox(Box.create(0, 0, 1, 1));
         KeyboardDefinitions.addQwertyRows(builder);
-        assertEquals(27, builder.build().size());
+        assertEquals(28, builder.build().size());
     }
 
     @Test
-    public void qwertzRows_produceTwentySevenKeys() throws KeyboardLayoutException {
+    public void qwertzRows_produceTwentyEightKeys() throws KeyboardLayoutException {
         KeyboardLayoutBuilder builder = new KeyboardLayoutBuilder(null);
         builder.setBox(Box.create(0, 0, 1, 1));
         KeyboardDefinitions.addQwertzRows(builder);
-        assertEquals(27, builder.build().size());
+        assertEquals(28, builder.build().size());
     }
 
     @Test
-    public void azertyRows_produceTwentyNineKeys() throws KeyboardLayoutException {
+    public void azertyRows_produceTwentyEightKeys() throws KeyboardLayoutException {
         KeyboardLayoutBuilder builder = new KeyboardLayoutBuilder(null);
         builder.setBox(Box.create(0, 0, 1, 1));
         KeyboardDefinitions.addAzertyRows(builder);
-        assertEquals(29, builder.build().size());
+        assertEquals(28, builder.build().size());
     }
 
     @Test

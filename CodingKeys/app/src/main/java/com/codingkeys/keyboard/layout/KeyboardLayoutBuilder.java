@@ -195,13 +195,18 @@ public class KeyboardLayoutBuilder {
                 .onAltShow("ALT").withRole(KeyInfo.Role.MODIFIER);
     }
 
+    /** Null-safe drawable load so pure-unit tests can build layouts without a Context. */
+    private Drawable loadDrawable(int resId) {
+        return context == null ? null : context.getDrawable(resId);
+    }
+
     public KeyboardLayoutBuilder addBackspaceKey() {
-        return addKey(context.getDrawable(R.drawable.ic_backspace), KeyboardDefinitions.CODE_BACKSPACE)
+        return addKey(loadDrawable(R.drawable.ic_backspace), KeyboardDefinitions.CODE_BACKSPACE)
                 .asRepeatable().withRole(KeyInfo.Role.SPECIAL);
     }
 
     public KeyboardLayoutBuilder addEnterKey() {
-        return addKey(context.getDrawable(R.drawable.ic_keyboard_return), KeyboardDefinitions.CODE_ENTER)
+        return addKey(loadDrawable(R.drawable.ic_keyboard_return), KeyboardDefinitions.CODE_ENTER)
                 .withSize(1.5f).withRole(KeyInfo.Role.ACTION);
     }
 }
