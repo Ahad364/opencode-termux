@@ -14,6 +14,8 @@ package com.codingkeys.keyboard.layout;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import com.codingkeys.keyboard.R;
+
 import java.util.ArrayList;
 
 /**
