@@ -69,6 +69,37 @@ Actions run that built that commit.
 ⬜ Field with no InputConnection: keys no-op without crash
 ⬜ Invalid preferences (wrong types) fall back to defaults instead of crashing
 
+## 8. Navigation bar integration (manual, on device)
+
+The keyboard must sit immediately above the real Android system navigation
+bar - never overlapping, clipping or hiding keys. The IME window keeps
+fitting the system bars (no `FLAG_LAYOUT_NO_LIMITS`, no fake bar); real
+`WindowInsets` are respected via `WindowInsetsCompat`.
+
+**3-button navigation (Back / Home / Recents visible):**
+⬜ Portrait: keyboard bottom edge touches the top of the navigation bar; the
+   bottom key row (Abc/`#+=`/`</>`/Nav, space, Enter) is fully visible
+⬜ Landscape: same, on every screen size tested
+⬜ Every key fully tappable; nothing drawn behind the Back/Home/Recents buttons
+⬜ Navigation buttons remain visible and functional while the keyboard is open
+⬜ With a themed keyboard, the area behind the navigation bar matches the
+   keyboard background (edge-to-edge devices); on fitted windows the bar is
+   owned by the system/app as usual
+
+**Gesture navigation:**
+⬜ Gesture pill area never covers the bottom key row
+⬜ Swipe-up/home gestures work while the keyboard is open
+
+**Edge cases:**
+⬜ Android 15 (edge-to-edge enforced): keys lift above the navigation bar
+   inset; the keyboard background continues behind the bar
+⬜ Tablet/foldable landscape (side navigation bar): keys shift horizontally
+   out of the bar area
+⬜ Keyboard height preference (20–60%) combines correctly with the inset:
+   the key area keeps its configured height and the inset is added below
+⬜ Split-screen: keyboard sits above the navigation bar inside the focused
+   split's window
+
 ## Known limitations (documented honestly)
 
 1. **Undo/Redo support varies by editor.** Editors exposing `performContextMenuAction(UNDO/REDO)` (e.g. TextView-based apps) get full native undo. Others get the local fallback, which only covers keyboard-initiated changes - it cannot reverse edits the app made itself. Coding Keys reports failure instead of pretending.

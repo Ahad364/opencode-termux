@@ -33,6 +33,16 @@ public class KeyboardLayoutView extends ViewGroup {
     private final Paint panelPaint = new Paint();
     /** When > 0, the view measures to this fixed height (in-app previews). */
     private int fixedHeight = -1;
+    /**
+     * System navigation bar insets. In the default case the IME window is
+     * laid out above the navigation bar by the system and these stay 0.
+     * On edge-to-edge configurations (Android 15+, OEM translucent bars)
+     * the window extends behind the bar, so the keys must be lifted above
+     * it while the background continues behind it.
+     */
+    private int navLeftInset = 0;
+    private int navRightInset = 0;
+    private int navBottomInset = 0;
 
     public KeyboardLayoutView(Context context, UiTheme uiTheme) {
         super(context);
@@ -43,6 +53,29 @@ public class KeyboardLayoutView extends ViewGroup {
 
     public void setFixedHeight(int heightPx) {
         this.fixedHeight = heightPx;
+    }
+
+    /**
+     * Apply the system navigation bar insets so keyboard keys are never
+     * drawn behind the Back / Home / Recents buttons.
+     *
+     * - Bottom inset: keys end above the navigation bar; the keyboard
+     *   background keeps painting the strip behind the bar, so the bar
+     *   area matches the keyboard.
+     * - Left/right insets: cover tablets and foldables that place the
+     *   3-button navigation bar on the side in landscape.
+     *
+     * Insets arrive from the WindowInsets listener the IME attaches; when
+     * the system already fits the IME window above the bar, they are 0 and
+     * the layout is unchanged.
+     */
+    public void setNavigationBarInsets(int left, int right, int bottom) {
+        if (left != navLeftInset || right != navRightInset || bottom != navBottomInset) {
+            navLeftInset = Math.max(0, left);
+            navRightInset = Math.max(0, right);
+            navBottomInset = Math.max(0, bottom);
+            requestLayout();
+        }
     }
 
     @Override
@@ -59,7 +92,12 @@ public class KeyboardLayoutView extends ViewGroup {
                 ? uiTheme.portraitSize
                 : uiTheme.landscapeSize;
 
-        setMeasuredDimension(availableWidth, (int) (availableHeight * keyboardSize));
+        // Total height = requested key area + navigation bar strip (when the
+        // window is drawn edge-to-edge). The key area itself keeps its
+        // configured fraction of the screen, so keys are never squeezed or
+        // cut off by the system bar below.
+        setMeasuredDimension(availableWidth,
+                (int) (availableHeight * keyboardSize) + navBottomInset);
     }
 
     @Override
@@ -70,7 +108,11 @@ public class KeyboardLayoutView extends ViewGroup {
         final int count = getChildCount();
         for (int i = 0; i < count; i++) {
             final View child = getChildAt(i);
-            child.layout(l, t, r, b);
+            // Keys are confined to the safe area above the navigation bar
+            // (and beside a side navigation bar on tablets). The background
+            // painted in onDraw still covers the full view, so the strip
+            // behind the system buttons matches the keyboard.
+            child.layout(l + navLeftInset, t, r - navRightInset, b - navBottomInset);
         }
     }
 

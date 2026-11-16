@@ -23,6 +23,7 @@ Coding Keys puts everything a coder needs on the phone keyboard: programming bra
 - **Undo / Redo** - uses the editor's native undo where supported; otherwise a bounded local fallback inverts the keyboard's own commits, deletes and pastes
 - **SHIFT + arrows** selects (via editor meta-key events)
 - **CTRL + LEFT / RIGHT** moves by word, with a bounded-scan fallback for editors that ignore ctrl+arrows
+- **Navigation bar safe**: keys always sit above the Android 3-button navigation bar (and gesture pill); real `WindowInsets` are respected on every screen size, orientation and edge-to-edge configuration - no `FLAG_LAYOUT_NO_LIMITS`, no fake bar
 - **HOME / END / PgUp / PgDn** navigation
 - Honest result reporting: an operation is only treated as successful when the editor confirms it
 

@@ -24,6 +24,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import com.codingkeys.keyboard.core.InputConnectionManager;
 import com.codingkeys.keyboard.core.KeyboardEventDispatcher;
 import com.codingkeys.keyboard.core.KeyboardPreferences;
@@ -205,6 +209,7 @@ public class CodingKeysIME extends InputMethodService
 
             Collection<Key> keys = builder.build();
             currentView = uiFactory.createKeyboardView(this, keys);
+            attachNavigationBarInsetsHandling(currentView);
             return currentView;
         } catch (KeyboardLayoutException e) {
             Log.e(TAG, "Layout generation failed: " + e.getMessage(), e);
@@ -213,8 +218,36 @@ public class CodingKeysIME extends InputMethodService
         }
         // Never return a broken keyboard: fall back to an empty panel so the
         // system still shows something and the user can switch IMEs.
-        return new KeyboardLayoutView(this, uiFactory != null ? uiFactory.uiTheme
-                : UiTheme.buildFromInfo(ThemeManager.resolve(preferences)));
+        KeyboardLayoutView fallback = new KeyboardLayoutView(this,
+                uiFactory != null ? uiFactory.uiTheme
+                        : UiTheme.buildFromInfo(ThemeManager.resolve(preferences)));
+        attachNavigationBarInsetsHandling(fallback);
+        return fallback;
+    }
+
+    /**
+     * Navigation bar integration (3-button and gesture navigation).
+     *
+     * The system normally lays out the IME window directly above the
+     * navigation bar; the reported navigation bar inset is then 0 and the
+     * keyboard layout is unchanged. When the window is drawn edge-to-edge
+     * (Android 15+ or OEM translucent navigation), the real system bar
+     * insets reach this view: the keys are lifted above the bar and the
+     * keyboard background continues behind it, so Back / Home / Recents
+     * stay visible and tappable and no key is ever covered.
+     *
+     * FLAG_LAYOUT_NO_LIMITS is deliberately NOT used - the window keeps
+     * fitting the system bars and real WindowInsets are respected instead.
+     * No fake navigation bar is drawn: only the keyboard background is
+     * extended behind the real system bar.
+     */
+    private void attachNavigationBarInsetsHandling(KeyboardLayoutView view) {
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            view.setNavigationBarInsets(bars.left, bars.right, bars.bottom);
+            // Consumed: children (key buttons) must not apply the insets again.
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     private void addAlphabetRows(KeyboardLayoutBuilder builder) {
