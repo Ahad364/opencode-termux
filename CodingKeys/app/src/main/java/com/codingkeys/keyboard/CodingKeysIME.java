@@ -64,6 +64,14 @@ public class CodingKeysIME extends InputMethodService
     private KeyboardUiFactory uiFactory;
     private KeyboardLayoutView currentView;
 
+    /**
+     * What the currently shown input view was built for. Used to reuse the
+     * view across hide/show cycles instead of recreating it on every open -
+     * the navigation bar fix depends on this (see ensureInputView).
+     */
+    private int builtForPage = -1;
+    private String builtForFingerprint = null;
+
     private KeyboardPreferences preferences;
     private KeyboardStateManager stateManager;
     private ModifierKeyManager modifiers;
@@ -130,8 +138,91 @@ public class CodingKeysIME extends InputMethodService
         }
         modifiers.setSticky(preferences.isStickyModifiers());
         applyPreferencesToFactory();
-        setInputView(buildPage(stateManager.getCurrentPage()));
+
+        // Navigation bar positioning fix: do NOT rebuild the input view on
+        // every open. Rebuild only when something actually changed; otherwise
+        // reuse the already-correct view and re-sync the current insets.
+        ensureInputView();
         updateModifierViews();
+    }
+
+    /**
+     * ROOT CAUSE of the "correct on first open, wrong afterwards" bug:
+     * the old code called {@code setInputView(buildPage(...))} inside
+     * {@link #onStartInputView}, so every open tore down the correctly
+     * padded view and installed a brand-new one whose navigation bar inset
+     * was still 0. The platform dispatches WindowInsets on window creation
+     * and on insets changes - a view swapped into an already-created window
+     * is NOT guaranteed an insets pass. First open worked (window creation
+     * traversal dispatches insets); every later open showed an unpadded
+     * view whose bottom row slid behind the navigation bar.
+     *
+     * PERMANENT FIX, two parts:
+     * 1. Reuse the input view across open/close cycles. Rebuild only when
+     *    the page or a layout-affecting preference changed. The same view
+     *    with the same insets renders the same position every time.
+     * 2. After every show, force {@link ViewCompat#requestApplyInsets} so
+     *    the CURRENT system insets are re-dispatched into whatever view is
+     *    shown - fresh or reused. Positioning is recalculated on each open
+     *    from live values, never from stale cached ones. The inset setter
+     *    is idempotent, so repeated dispatches cause no duplicate padding
+     *    and no layout loops.
+     */
+    private void ensureInputView() {
+        int page = stateManager.getCurrentPage();
+        boolean stale = currentView == null
+                || builtForPage != page
+                || !layoutFingerprint().equals(builtForFingerprint);
+        if (stale) {
+            // Page switch, theme/height/symbol change, first build, or view
+            // recreation after a configuration change: build a fresh view.
+            rebuildKeyboard();
+            return;
+        }
+        // Reused view: re-dispatch the live window insets so the navigation
+        // bar spacing is recalculated for THIS open. Posted so it runs after
+        // the view is attached to the (possibly re-shown) window.
+        final KeyboardLayoutView view = currentView;
+        view.post(() -> ViewCompat.requestApplyInsets(view));
+    }
+
+    /**
+     * Signature of every preference that influences the built layout. When
+     * it changes, the input view must be rebuilt; otherwise it is reused.
+     */
+    private String layoutFingerprint() {
+        return preferences.getThemeIndex()
+                + "|" + preferences.getLayoutIndex()
+                + "|" + preferences.getToolbarMode()
+                + "|" + preferences.getKeyHeightPercent()
+                + "|" + preferences.getLandscapeHeightPercent()
+                + "|" + preferences.getFontSizeSp()
+                + "|" + preferences.getKeyCornerRadiusDp()
+                + "|" + preferences.getKeyGapDp()
+                + "|" + preferences.isPreviewEnabled()
+                + "|" + preferences.isBorderEnabled()
+                + "|" + preferences.isKeyRepeatEnabled()
+                + "|" + preferences.getRepeatDelayMs()
+                + "|" + preferences.getRepeatRateMs()
+                + "|" + preferences.getSymbolRows()
+                + "|" + preferences.getProgRows()
+                + "|" + preferences.getBottomChars();
+    }
+
+    /**
+     * Called on every window show. Re-dispatch the current insets so the
+     * keyboard is positioned against the CURRENT navigation bar state (e.g.
+     * the user switched between 3-button and gesture navigation while the
+     * keyboard was closed). The inset setter is change-guarded, so this is
+     * a no-op when the values are unchanged.
+     */
+    @Override
+    public void onWindowShown() {
+        super.onWindowShown();
+        if (currentView != null) {
+            final KeyboardLayoutView view = currentView;
+            view.post(() -> ViewCompat.requestApplyInsets(view));
+        }
     }
 
     @Override
@@ -158,6 +249,7 @@ public class CodingKeysIME extends InputMethodService
 
     /** Dynamically build one page of the keyboard. */
     private KeyboardLayoutView buildPage(int page) {
+        String fingerprint = layoutFingerprint();
         try {
             // The builder works in normalized space (Box 0..1), so gaps must
             // be converted from pixels to a fraction of the keyboard size.
@@ -209,6 +301,8 @@ public class CodingKeysIME extends InputMethodService
             Collection<Key> keys = builder.build();
             currentView = uiFactory.createKeyboardView(this, keys);
             attachNavigationBarInsetsHandling(currentView);
+            builtForPage = page;
+            builtForFingerprint = fingerprint;
             return currentView;
         } catch (KeyboardLayoutException e) {
             Log.e(TAG, "Layout generation failed: " + e.getMessage(), e);
@@ -221,6 +315,8 @@ public class CodingKeysIME extends InputMethodService
                 uiFactory != null ? uiFactory.uiTheme
                         : UiTheme.buildFromInfo(ThemeManager.resolve(preferences)));
         attachNavigationBarInsetsHandling(fallback);
+        builtForPage = page;
+        builtForFingerprint = fingerprint;
         return fallback;
     }
 
