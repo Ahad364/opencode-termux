@@ -92,8 +92,8 @@ public class KeyboardDefinitions {
         keyboard.newRow()
                 .addKey("Esc", CODE_ESCAPE).withRole(KeyInfo.Role.SPECIAL)
                 .addTabKey()
-                .addAltKey()
-                .addArrowKeys(context, keyboard);
+                .addAltKey();
+        addArrowKeys(context, keyboard);
     }
 
     private static void addArrowKeys(Context context, KeyboardLayoutBuilder keyboard) {
